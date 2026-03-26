@@ -151,7 +151,7 @@ const useFS = () => {
 const useAgent = () => {
     const [apiKey, setApiKeyState] = useState(() => localStorage.getItem('gemini_api_key') || '');
     const [githubToken, setGithubTokenState] = useState(() => localStorage.getItem('github_token') || '');
-    const [githubOwner, setGithubOwnerState] = useState(() => localStorage.getItem('github_owner') || '');
+    const [githubOwner, setGithubOwnerState] = useState(() => localStorage.getItem('github_owner') || 'Arnavmaurya001');
     const [githubRepo, setGithubRepoState] = useState(() => localStorage.getItem('github_repo') || 'maurya-ai-agent');
     
     const [messages, setMessages] = useState([]);
@@ -282,7 +282,7 @@ const useAgent = () => {
     };
 
     const sendMessage = async (input) => {
-        if (!input.trim() || !apiKey) return;
+        if (!input.trim()) return; // Removed apiKey check (Cloud Proxy will handle it)
 
         const userMsg = { role: 'user', content: input };
         const newMessages = [...messages, userMsg];
@@ -532,7 +532,7 @@ const Chat = ({ messages, isThinking, apiKey, onSendMessage }) => {
                         onChange={(e) => setInput(e.target.value)}
                         className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-4 pl-4 pr-14 text-sm outline-none text-white"
                     />
-                    <button type="submit" disabled={!input.trim() || isThinking || !apiKey} className="absolute right-3 bottom-3 p-2 bg-zinc-200 text-zinc-950 rounded-xl hover:bg-white transition-all">
+                    <button type="submit" disabled={!input.trim() || isThinking} className="absolute right-3 bottom-3 p-2 bg-zinc-200 text-zinc-950 rounded-xl hover:bg-white transition-all">
                         <Send size={18} />
                     </button>
                 </form>
@@ -573,12 +573,12 @@ const Header = ({ apiKey, onApiKeyChange, githubToken, onGithubTokenChange, gith
             ) : (
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${apiKey ? 'bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]' : 'bg-red-500'}`} />
-                        <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">{apiKey ? 'Gemini' : 'No Gemini'}</span>
+                        <div className={`w-2 h-2 rounded-full bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]`} />
+                        <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Gemini Cloud</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${githubToken ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500'}`} />
-                        <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">{githubToken ? 'GitHub' : 'No GitHub'}</span>
+                        <div className={`w-2 h-2 rounded-full ${githubToken ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-zinc-700'}`} />
+                        <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">{githubToken ? 'GitHub' : 'Cloud Push Only'}</span>
                     </div>
                 </div>
             )}
