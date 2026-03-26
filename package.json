@@ -1,0 +1,12 @@
+{
+  "name": "maurya-ai-agent",
+  "version": "1.0.0",
+  "description": "Maurya AI React Coding Agent",
+  "main": "index.html",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node start.py"
+  }
+}
