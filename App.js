@@ -101,6 +101,7 @@ const GEMINI_TOOLS = {
 
 const callGemini = async (apiKey, contents, systemPrompt) => {
     try {
+        // Use the Netlify Function endpoint (redirected via /api/proxy)
         const response = await fetch('/api/proxy', {
             method: 'POST',
             headers: {
@@ -116,7 +117,7 @@ const callGemini = async (apiKey, contents, systemPrompt) => {
 
         if (!response.ok) {
             const err = await response.json();
-            throw new Error(err.error?.message || 'Failed to call Gemini API through local proxy');
+            throw new Error(err.error?.message || 'Failed to call Gemini API through cloud proxy');
         }
 
         return await response.json();
@@ -148,8 +149,11 @@ const useFS = () => {
 };
 
 const useAgent = () => {
-    // PRE-SET THE USER'S KEY
-    const [apiKey, setApiKeyState] = useState(() => localStorage.getItem('gemini_api_key') || 'AIzaSyB1zVEjuu9Ksweu6w58LyeCj8JtEDs1_jU');
+    const [apiKey, setApiKeyState] = useState(() => localStorage.getItem('gemini_api_key') || '');
+    const [githubToken, setGithubTokenState] = useState(() => localStorage.getItem('github_token') || '');
+    const [githubOwner, setGithubOwnerState] = useState(() => localStorage.getItem('github_owner') || '');
+    const [githubRepo, setGithubRepoState] = useState(() => localStorage.getItem('github_repo') || 'maurya-ai-agent');
+    
     const [messages, setMessages] = useState([]);
     const [isThinking, setIsThinking] = useState(false);
     const [history, setHistory] = useState(() => {
@@ -157,11 +161,26 @@ const useAgent = () => {
         return saved ? JSON.parse(saved) : [];
     });
     const [currentSessionId, setCurrentSessionId] = useState(null);
-    const [showApiKeyInput, setShowApiKeyInput] = useState(!apiKey);
+    const [showApiKeyInput, setShowApiKeyInput] = useState(!apiKey || !githubToken);
 
     const setApiKey = (val) => {
         setApiKeyState(val);
         localStorage.setItem('gemini_api_key', val);
+    };
+
+    const setGithubToken = (val) => {
+        setGithubTokenState(val);
+        localStorage.setItem('github_token', val);
+    };
+
+    const setGithubOwner = (val) => {
+        setGithubOwnerState(val);
+        localStorage.setItem('github_owner', val);
+    };
+
+    const setGithubRepo = (val) => {
+        setGithubRepoState(val);
+        localStorage.setItem('github_repo', val);
     };
 
     const saveSession = useCallback((msgs) => {
@@ -190,32 +209,58 @@ const useAgent = () => {
     }, [currentSessionId, history]);
 
     const executeTool = async (name, args) => {
+        const ghHeaders = {
+            'Authorization': `token ${githubToken}`,
+            'Accept': 'application/vnd.github.v3+json'
+        };
+
         try {
             switch (name) {
                 case 'read_file':
-                    const readRes = await fetch('/api/files/read', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ path: args.path })
+                    console.log(`> Cloud Read: ${args.path}`);
+                    const readRes = await fetch(`https://api.github.com/repos/${githubOwner}/${githubRepo}/contents/${args.path}`, {
+                        headers: ghHeaders
                     });
                     if (!readRes.ok) {
                         const err = await readRes.json();
-                        return `Error: ${err.error?.message || 'Failed to read file'}`;
+                        return `Error: ${err.message || 'Failed to read from GitHub'}`;
                     }
                     const readData = await readRes.json();
-                    return readData.content;
+                    // Handle base64 decoding safely for UTF-8
+                    return decodeURIComponent(escape(atob(readData.content)));
+
                 case 'write_file':
-                    const writeRes = await fetch('/api/files/write', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ path: args.path, content: args.content })
+                    console.log(`> Cloud Write: ${args.path}`);
+                    // 1. Get current file SHA if it exists
+                    const existingFile = await fetch(`https://api.github.com/repos/${githubOwner}/${githubRepo}/contents/${args.path}`, {
+                        headers: ghHeaders
                     });
+                    
+                    let sha = null;
+                    if (existingFile.ok) {
+                        const existingData = await existingFile.json();
+                        sha = existingData.sha;
+                    }
+
+                    // 2. Commit the change
+                    const writeRes = await fetch(`https://api.github.com/repos/${githubOwner}/${githubRepo}/contents/${args.path}`, {
+                        method: 'PUT',
+                        headers: ghHeaders,
+                        body: JSON.stringify({
+                            message: `Update ${args.path} via Maurya AI Agent`,
+                            content: btoa(unescape(encodeURIComponent(args.content))),
+                            sha: sha
+                        })
+                    });
+
                     if (!writeRes.ok) {
                         const err = await writeRes.json();
-                        return `Error: ${err.error?.message || 'Failed to write file'}`;
+                        return `Error: ${err.message || 'Failed to write to GitHub'}`;
                     }
-                    return `Successfully wrote to '${args.path}'`;
+                    return `Successfully committed '${args.path}' to GitHub repository.`;
+
                 case 'web_search':
+                    // Still use the cloud proxy for search
                     const searchRes = await fetch('/api/search', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -227,6 +272,7 @@ const useAgent = () => {
                     }
                     const searchData = await searchRes.json();
                     return Array.isArray(searchData.results) ? searchData.results.join('\n') : "No results found.";
+
                 default:
                     return "Unknown tool";
             }
@@ -495,23 +541,45 @@ const Chat = ({ messages, isThinking, apiKey, onSendMessage }) => {
     );
 };
 
-const Header = ({ apiKey, onApiKeyChange, showInput, onCloseInput }) => {
+const Header = ({ apiKey, onApiKeyChange, githubToken, onGithubTokenChange, githubOwner, onGithubOwnerChange, githubRepo, onGithubRepoChange, showInput, onCloseInput }) => {
     return (
-        <header className="h-16 border-b border-zinc-900 flex items-center justify-between px-6 bg-zinc-950/80 backdrop-blur-md">
-            <h1 className="font-semibold text-zinc-200">Maurya AI Agent (Gemini)</h1>
+        <header className="py-4 border-b border-zinc-900 flex flex-col md:flex-row items-center justify-between px-6 bg-zinc-950/80 backdrop-blur-md gap-4">
+            <h1 className="font-semibold text-zinc-200 shrink-0">Maurya AI Cloud Agent</h1>
+            
             {showInput ? (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-3 justify-end w-full max-w-2xl">
                     <input 
-                        type="password" value={apiKey} placeholder="Gemini API Key..."
+                        type="password" value={apiKey} placeholder="Gemini Key..."
                         onChange={(e) => onApiKeyChange(e.target.value)}
-                        className="bg-zinc-900 border-zinc-800 rounded-lg py-1 px-3 text-xs outline-none text-white"
+                        className="bg-zinc-900 border border-zinc-800 rounded-lg py-1.5 px-3 text-xs outline-none text-white w-32"
                     />
-                    <button onClick={onCloseInput} className="bg-zinc-200 text-zinc-950 px-3 py-1 rounded-lg text-xs font-bold">Save</button>
+                    <input 
+                        type="password" value={githubToken} placeholder="GitHub PAT..."
+                        onChange={(e) => onGithubTokenChange(e.target.value)}
+                        className="bg-zinc-900 border border-zinc-800 rounded-lg py-1.5 px-3 text-xs outline-none text-white w-32"
+                    />
+                    <input 
+                        type="text" value={githubOwner} placeholder="Username"
+                        onChange={(e) => onGithubOwnerChange(e.target.value)}
+                        className="bg-zinc-900 border border-zinc-800 rounded-lg py-1.5 px-3 text-xs outline-none text-white w-24"
+                    />
+                    <input 
+                        type="text" value={githubRepo} placeholder="Repo Name"
+                        onChange={(e) => onGithubRepoChange(e.target.value)}
+                        className="bg-zinc-900 border border-zinc-800 rounded-lg py-1.5 px-3 text-xs outline-none text-white w-32"
+                    />
+                    <button onClick={onCloseInput} className="bg-zinc-200 text-zinc-950 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-white transition-colors">Save & Close</button>
                 </div>
             ) : (
-                <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${apiKey ? 'bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]' : 'bg-red-500'}`} />
-                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">{apiKey ? 'Gemini Active' : 'No API Key'}</span>
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${apiKey ? 'bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]' : 'bg-red-500'}`} />
+                        <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">{apiKey ? 'Gemini' : 'No Gemini'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${githubToken ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500'}`} />
+                        <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">{githubToken ? 'GitHub' : 'No GitHub'}</span>
+                    </div>
                 </div>
             )}
         </header>
@@ -521,6 +589,7 @@ const Header = ({ apiKey, onApiKeyChange, showInput, onCloseInput }) => {
 const App = () => {
     const { 
         messages, isThinking, history, currentSessionId, apiKey, setApiKey, 
+        githubToken, setGithubToken, githubOwner, setGithubOwner, githubRepo, setGithubRepo,
         sendMessage, startNewChat, loadSession, deleteSession, showApiKeyInput, setShowApiKeyInput 
     } = useAgent();
 
@@ -528,7 +597,13 @@ const App = () => {
         <div className="flex h-screen w-full overflow-hidden bg-zinc-950 font-sans text-zinc-100">
             <Sidebar history={history} currentSessionId={currentSessionId} onNewChat={startNewChat} onLoadSession={loadSession} onDeleteSession={deleteSession} onToggleAPI={() => setShowApiKeyInput(!showApiKeyInput)} />
             <main className="flex-1 flex flex-col relative overflow-hidden h-full">
-                <Header apiKey={apiKey} onApiKeyChange={setApiKey} showInput={showApiKeyInput} onCloseInput={() => setShowApiKeyInput(false)} />
+                <Header 
+                    apiKey={apiKey} onApiKeyChange={setApiKey} 
+                    githubToken={githubToken} onGithubTokenChange={setGithubToken}
+                    githubOwner={githubOwner} onGithubOwnerChange={setGithubOwner}
+                    githubRepo={githubRepo} onGithubRepoChange={setGithubRepo}
+                    showInput={showApiKeyInput} onCloseInput={() => setShowApiKeyInput(false)} 
+                />
                 <Chat messages={messages} isThinking={isThinking} apiKey={apiKey} onSendMessage={sendMessage} />
             </main>
         </div>
