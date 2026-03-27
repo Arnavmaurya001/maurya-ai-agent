@@ -34,6 +34,12 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
     def _send_error(self, status, message):
         self._send_json({'error': {'message': message}}, status)
 
+    def do_GET(self):
+        if self.path == '/api/search':
+            self._send_json({'message': 'Search endpoint is active. Use POST to perform a search.'})
+        else:
+            super().do_GET()
+
     def do_POST(self):
         content_length = int(self.headers.get('Content-Length', 0))
         post_data = self.rfile.read(content_length) if content_length > 0 else b''
@@ -41,7 +47,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
         if self.path == '/api/proxy':
             # API Selection Logic (Gemini is now default)
             api_key = self.headers.get('x-api-key', '')
-            url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}'
+            url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}'
             
             headers = {
                 'Content-Type': 'application/json',
