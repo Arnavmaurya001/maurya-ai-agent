@@ -14,7 +14,7 @@ exports.handler = async (event) => {
     }
 
     // Try v1 API instead of v1beta for more stable model routing
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
     
     try {
         const response = await fetch(url, {
