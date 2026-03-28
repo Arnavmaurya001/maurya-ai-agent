@@ -98,14 +98,14 @@ const Globe = (props) => (
 const Wand = (props) => (
     <Icon {...props}><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.21 1.21 0 0 0 1.72 0L21.64 5.36a1.21 1.21 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v1"/><path d="M19 2v1"/><path d="M10 2v1"/><path d="M7 2v1"/><path d="M15 2v1"/><path d="M8 11v1"/><path d="M8 5v1"/><path d="M20 10v1"/><path d="M14 5v1"/></Icon>
 );
-const Mic = (props) => (
-    <Icon {...props}><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></Icon>
+const Wrench = (props) => (
+    <Icon {...props}><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 1 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></Icon>
 );
 const Check = (props) => (
     <Icon {...props}><polyline points="20 6 9 17 4 12"/></Icon>
 );
-const Wrench = (props) => (
-    <Icon {...props}><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></Icon>
+const Mic = (props) => (
+    <Icon {...props}><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></Icon>
 );
 const ChevronRight = (props) => (
     <Icon {...props}><path d="m9 18 6-6-6-6"/></Icon>
