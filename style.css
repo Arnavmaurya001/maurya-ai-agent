@@ -167,30 +167,37 @@ pre code {
 }
 
 .mobile-header {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
+    width: 100%;
     background: var(--bg-primary);
     border-bottom: 1px solid var(--border-subtle);
-    z-index: 100;
+    z-index: 1001;
+    display: none;
     align-items: center;
     justify-content: flex-start;
-    padding: 0 1.25rem;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    padding: 0 1rem;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     gap: 0.75rem;
 }
 
+.mobile-header-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-left: 0.25rem;
+}
+
 .mobile-logo-text {
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: var(--accent);
+    letter-spacing: 0.12em;
+    color: var(--text-primary);
     margin-top: 2px;
+}
+
+.mobile-logo-text span {
+    color: var(--accent);
 }
 
 .sidebar-icon-btn {
@@ -393,6 +400,19 @@ pre code {
     .input-island-centered {
         padding: 1rem;
         border-radius: 20px;
+    }
+
+    .mobile-header {
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+    }
+
+    .mobile-header-content {
+        padding-left: 0.5rem;
     }
 
     .artifact-pane {
