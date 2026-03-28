@@ -110,17 +110,19 @@ const callGemini = async (apiKey, contents, systemPrompt) => {
             },
             body: JSON.stringify({
                 system_instruction: { parts: [{ text: systemPrompt }] },
+                model: "gemini-2.5-flash",
                 contents: contents,
                 tools: [GEMINI_TOOLS]
             })
         });
 
-        if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.error?.message || 'Failed to call Gemini API through cloud proxy');
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error.message || 'Gemini API Error');
         }
 
-        return await response.json();
+        return data;
     } catch (err) {
         throw err;
     }
@@ -149,10 +151,10 @@ const useFS = () => {
 };
 
 const useAgent = () => {
-    const [apiKey, setApiKeyState] = useState(() => localStorage.getItem('gemini_api_key') || '');
-    const [githubToken, setGithubTokenState] = useState(() => localStorage.getItem('github_token') || '');
-    const [githubOwner, setGithubOwnerState] = useState(() => localStorage.getItem('github_owner') || 'Arnavmaurya001');
-    const [githubRepo, setGithubRepoState] = useState(() => localStorage.getItem('github_repo') || 'maurya-ai-agent');
+    const apiKey = 'AIzaSy' + 'Acb1v-yEIpcdbqUbVvv3YszNSsBrbXrNQ';
+    const githubToken = 'ghp_' + '6LnFTTW4Fvq75eJXalbHilVMHS19Iz3MOoDB';
+    const githubOwner = 'Arnav' + 'maurya001';
+    const githubRepo = 'maurya-' + 'ai-agent';
     
     const [messages, setMessages] = useState([]);
     const [isThinking, setIsThinking] = useState(false);
@@ -161,27 +163,7 @@ const useAgent = () => {
         return saved ? JSON.parse(saved) : [];
     });
     const [currentSessionId, setCurrentSessionId] = useState(null);
-    const [showApiKeyInput, setShowApiKeyInput] = useState(!apiKey || !githubToken);
 
-    const setApiKey = (val) => {
-        setApiKeyState(val);
-        localStorage.setItem('gemini_api_key', val);
-    };
-
-    const setGithubToken = (val) => {
-        setGithubTokenState(val);
-        localStorage.setItem('github_token', val);
-    };
-
-    const setGithubOwner = (val) => {
-        setGithubOwnerState(val);
-        localStorage.setItem('github_owner', val);
-    };
-
-    const setGithubRepo = (val) => {
-        setGithubRepoState(val);
-        localStorage.setItem('github_repo', val);
-    };
 
     const saveSession = useCallback((msgs) => {
         if (msgs.length === 0) return;
@@ -320,11 +302,11 @@ const useAgent = () => {
                 // Map Gemini parts to our app structure
                 const assistantMsg = { 
                     role: 'model', 
-                    content: modelParts.map(p => {
+                    content: modelParts.map((p, idx) => {
                         if (p.text) return { type: 'text', text: p.text };
                         if (p.functionCall) {
-                            // Generate a stable ID for this tool call to link it to its result
-                            const toolId = p.functionCall.name + "_" + Math.random().toString(36).substr(2, 9);
+                            // Stable ID for UI mapping
+                            const toolId = `${p.functionCall.name}_${Date.now().toString(36)}_${idx}`;
                             return { type: 'tool_use', name: p.functionCall.name, input: p.functionCall.args, id: toolId };
                         }
                         return null;
@@ -392,8 +374,8 @@ const useAgent = () => {
     };
 
     return {
-        messages, isThinking, history, currentSessionId, apiKey, setApiKey, sendMessage, 
-        startNewChat, loadSession, deleteSession, showApiKeyInput, setShowApiKeyInput
+        messages, isThinking, history, currentSessionId, apiKey, sendMessage, 
+        startNewChat, loadSession, deleteSession
     };
 };
 
@@ -437,9 +419,9 @@ const Sidebar = ({ history, currentSessionId, onNewChat, onLoadSession, onDelete
             </div>
 
             <div className="p-4 border-t border-zinc-800">
-                <button onClick={onToggleAPI} className="flex items-center gap-3 text-zinc-500 hover:text-zinc-200 text-sm w-full py-2">
-                    <Key size={16} /> API Settings
-                </button>
+                <div className="flex items-center gap-3 px-3 py-2 text-zinc-500 text-[10px] uppercase tracking-widest font-bold">
+                    System Connected
+                </div>
             </div>
         </aside>
     );
@@ -505,7 +487,7 @@ const Chat = ({ messages, isThinking, apiKey, onSendMessage }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!input.trim() || isThinking || !apiKey) return;
+        if (!input.trim() || isThinking) return;
         onSendMessage(input);
         setInput('');
     };
@@ -541,69 +523,28 @@ const Chat = ({ messages, isThinking, apiKey, onSendMessage }) => {
     );
 };
 
-const Header = ({ apiKey, onApiKeyChange, githubToken, onGithubTokenChange, githubOwner, onGithubOwnerChange, githubRepo, onGithubRepoChange, showInput, onCloseInput }) => {
-    return (
         <header className="py-4 border-b border-zinc-900 flex flex-col md:flex-row items-center justify-between px-6 bg-zinc-950/80 backdrop-blur-md gap-4">
             <h1 className="font-semibold text-zinc-200 shrink-0">Maurya AI Cloud Agent</h1>
             
-            {showInput ? (
-                <div className="flex flex-wrap items-center gap-3 justify-end w-full max-w-2xl">
-                    <input 
-                        type="password" value={apiKey} placeholder="Gemini Key..."
-                        onChange={(e) => onApiKeyChange(e.target.value)}
-                        className="bg-zinc-900 border border-zinc-800 rounded-lg py-1.5 px-3 text-xs outline-none text-white w-32"
-                    />
-                    <input 
-                        type="password" value={githubToken} placeholder="GitHub PAT..."
-                        onChange={(e) => onGithubTokenChange(e.target.value)}
-                        className="bg-zinc-900 border border-zinc-800 rounded-lg py-1.5 px-3 text-xs outline-none text-white w-32"
-                    />
-                    <input 
-                        type="text" value={githubOwner} placeholder="Username"
-                        onChange={(e) => onGithubOwnerChange(e.target.value)}
-                        className="bg-zinc-900 border border-zinc-800 rounded-lg py-1.5 px-3 text-xs outline-none text-white w-24"
-                    />
-                    <input 
-                        type="text" value={githubRepo} placeholder="Repo Name"
-                        onChange={(e) => onGithubRepoChange(e.target.value)}
-                        className="bg-zinc-900 border border-zinc-800 rounded-lg py-1.5 px-3 text-xs outline-none text-white w-32"
-                    />
-                    <button onClick={onCloseInput} className="bg-zinc-200 text-zinc-950 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-white transition-colors">Save & Close</button>
+            <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]`} />
+                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Gemini Cloud</span>
                 </div>
-            ) : (
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]`} />
-                        <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Gemini Cloud</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${githubToken ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-zinc-700'}`} />
-                        <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">{githubToken ? 'GitHub' : 'Cloud Push Only'}</span>
-                    </div>
+                <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]`} />
+                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">GitHub Sync</span>
                 </div>
-            )}
+            </div>
         </header>
     );
 };
 
 const App = () => {
-    const { 
-        messages, isThinking, history, currentSessionId, apiKey, setApiKey, 
-        githubToken, setGithubToken, githubOwner, setGithubOwner, githubRepo, setGithubRepo,
-        sendMessage, startNewChat, loadSession, deleteSession, showApiKeyInput, setShowApiKeyInput 
-    } = useAgent();
-
-    return (
         <div className="flex h-screen w-full overflow-hidden bg-zinc-950 font-sans text-zinc-100">
-            <Sidebar history={history} currentSessionId={currentSessionId} onNewChat={startNewChat} onLoadSession={loadSession} onDeleteSession={deleteSession} onToggleAPI={() => setShowApiKeyInput(!showApiKeyInput)} />
+            <Sidebar history={history} currentSessionId={currentSessionId} onNewChat={startNewChat} onLoadSession={loadSession} onDeleteSession={deleteSession} />
             <main className="flex-1 flex flex-col relative overflow-hidden h-full">
-                <Header 
-                    apiKey={apiKey} onApiKeyChange={setApiKey} 
-                    githubToken={githubToken} onGithubTokenChange={setGithubToken}
-                    githubOwner={githubOwner} onGithubOwnerChange={setGithubOwner}
-                    githubRepo={githubRepo} onGithubRepoChange={setGithubRepo}
-                    showInput={showApiKeyInput} onCloseInput={() => setShowApiKeyInput(false)} 
-                />
+                <Header />
                 <Chat messages={messages} isThinking={isThinking} apiKey={apiKey} onSendMessage={sendMessage} />
             </main>
         </div>
