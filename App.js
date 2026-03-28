@@ -455,7 +455,8 @@ const useAgent = () => {
  * 
  */
 
-const Sidebar = ({ onNewChat, user }) => {
+const Sidebar = ({ onNewChat, user, isDarkMode, onToggleTheme, onLogout }) => {
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
     const userInitials = user?.user_metadata?.full_name?.split(' ').map(n => n[0]).join('') || user?.email?.[0].toUpperCase() || '?';
 
     return (
@@ -472,9 +473,40 @@ const Sidebar = ({ onNewChat, user }) => {
             <button className="sidebar-icon-btn" title="Code"><Code size={22} /></button>
 
             <div className="mt-auto flex flex-col items-center gap-4 pb-4">
-                <button className="sidebar-icon-btn" title="Download App"><Download size={22} /></button>
-                <div className="w-10 h-10 rounded-full bg-[var(--bg-tertiary)] border border-[var(--border-subtle)] flex items-center justify-center text-xs font-bold text-[var(--text-primary)] cursor-pointer hover:border-[var(--accent)] transition-all">
-                    {userInitials}
+                <button 
+                    onClick={onToggleTheme}
+                    className="sidebar-icon-btn"
+                    title="Toggle Theme"
+                >
+                    {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                </button>
+                
+                <div className="relative">
+                    <div 
+                        onClick={() => setIsProfileOpen(!isProfileOpen)}
+                        className="w-10 h-10 rounded-full bg-[var(--bg-tertiary)] border border-[var(--border-subtle)] flex items-center justify-center text-xs font-bold text-[var(--text-primary)] cursor-pointer hover:border-[var(--accent)] transition-all"
+                    >
+                        {userInitials}
+                    </div>
+                    
+                    {isProfileOpen && (
+                        <>
+                            <div onClick={() => setIsProfileOpen(false)} className="fixed inset-0 z-40" />
+                            <div className="absolute left-14 bottom-0 w-56 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl p-2 z-50 glass slide-up overflow-hidden">
+                                <div className="px-3 py-3 border-b border-[var(--border-subtle)] mb-1">
+                                    <div className="text-xs font-bold text-[var(--text-primary)] truncate">{user?.user_metadata?.full_name || 'Active User'}</div>
+                                    <div className="text-[10px] text-[var(--text-secondary)] truncate mt-0.5">{user?.email}</div>
+                                </div>
+                                <button 
+                                    onClick={() => { onLogout(); setIsProfileOpen(false); }}
+                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-xs text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
+                                >
+                                    <LogOut size={14} />
+                                    Log out
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </aside>
@@ -488,8 +520,6 @@ const Markdown = ({ content }) => {
 };
 
 const ToolCall = ({ toolCall, result }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
-    
     const toolNames = {
         'web_search': 'Searching the web',
         'write_file': 'Generating file',
@@ -499,41 +529,16 @@ const ToolCall = ({ toolCall, result }) => {
     const isError = result && result.startsWith('Error:');
 
     return (
-        <div className="flex flex-col">
-            <button 
-                onClick={() => setIsExpanded(!isExpanded)} 
-                className={`tool-pill group ${isError ? 'error' : ''}`}
-            >
-                <div className="flex items-center gap-2.5">
-                    {result ? (
-                        isError ? <X size={14} className="text-red-500" /> : <Bot size={14} className="text-zinc-500" />
-                    ) : (
-                        <Loader2 size={14} className="animate-spin text-zinc-500" />
-                    )}
-                    <span className="text-xs font-medium text-zinc-400 group-hover:text-zinc-300 transition-colors">
-                        {toolNames[toolCall.name] || toolCall.name}
-                        {result && !isError && ' (completed)'}
-                    </span>
-                    <ChevronDown size={12} className={`text-zinc-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                </div>
-            </button>
-            
-            {isExpanded && (
-                <div className="tool-details sidebar-transition">
-                    <div className="text-zinc-500 mb-2 uppercase text-[9px] tracking-widest font-bold">Machine Data</div>
-                    <pre className="text-zinc-400 overflow-x-auto">
-                        {JSON.stringify(toolCall.input, null, 2)}
-                    </pre>
-                    {result && (
-                        <>
-                            <div className="mt-4 text-zinc-500 mb-2 uppercase text-[9px] tracking-widest font-bold">Response</div>
-                            <div className={`text-xs ${isError ? 'text-red-400' : 'text-zinc-300'}`}>
-                                {result}
-                            </div>
-                        </>
-                    )}
-                </div>
+        <div className="flex items-center gap-3 py-2 px-1 text-[var(--accent)] opacity-80 fade-in">
+            {result ? (
+                isError ? <X size={14} className="text-red-500" /> : <Bot size={14} className="text-[var(--accent)]" />
+            ) : (
+                <Loader2 size={14} className="animate-spin text-[var(--accent)]" />
             )}
+            <span className="text-[11px] font-bold uppercase tracking-widest">
+                {toolNames[toolCall.name] || toolCall.name}
+                {result && !isError && ' (completed)'}
+            </span>
         </div>
     );
 };
@@ -916,20 +921,15 @@ const App = () => {
     return (
         <div className="flex h-screen w-full overflow-hidden bg-[#0a0a0b] font-sans text-zinc-100 relative">
             <Sidebar 
-                history={history} 
-                currentSessionId={currentSessionId} 
                 onNewChat={startNewChat} 
-                onLoadSession={loadSession} 
-                onDeleteSession={deleteSession}
-                isOpen={sidebarOpen}
-                onClose={() => setSidebarOpen(false)}
                 user={user}
+                isDarkMode={isDarkMode}
+                onToggleTheme={() => setIsDarkMode(!isDarkMode)}
                 onLogout={handleLogout}
             />
             
             <div className="flex-1 flex overflow-hidden">
                 <main className={`flex-1 flex flex-col relative overflow-hidden h-full sidebar-transition ${artifact.isOpen ? 'opacity-80 scale-[0.99] origin-left' : ''}`}>
-                    <Header onToggleSidebar={() => setSidebarOpen(true)} user={user} onLogout={handleLogout} />
                     <Chat messages={messages} isThinking={isThinking} onSendMessage={sendMessage} />
                 </main>
                 
