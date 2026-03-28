@@ -99,42 +99,59 @@ const GEMINI_TOOLS = {
 };
 
 const callGemini = async (apiKey, contents, systemPrompt) => {
-    try {
-        // Use the Netlify Function endpoint (redirected via /api/proxy)
-        const response = await fetch('/api/proxy', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(apiKey ? { 'x-api-key': apiKey } : {})
-            },
-            body: JSON.stringify({
-                system_instruction: { parts: [{ text: systemPrompt }] },
-                model: "gemini-2.5-flash",
-                contents: contents,
-                tools: [GEMINI_TOOLS]
-            })
-        });
+    let retries = 3;
+    let lastError = null;
 
-        const data = await response.json();
-        
-        if (data.error) {
-            const msg = data.error.message || 'Gemini API Error';
-            // Specific parsing for quota/rate limit error
-            if (msg.includes('quota exceeded') || msg.includes('limit: 20')) {
-                const waitMatch = msg.match(/retry in ([\d.]+)s/);
-                if (waitMatch) {
-                    const seconds = parseFloat(waitMatch[1]);
+    while (retries > 0) {
+        try {
+            const response = await fetch('/api/proxy', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(apiKey ? { 'x-api-key': apiKey } : {})
+                },
+                body: JSON.stringify({
+                    system_instruction: { parts: [{ text: systemPrompt }] },
+                    model: "gemini-2.5-flash",
+                    contents: contents,
+                    tools: [GEMINI_TOOLS]
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.error) {
+                const msg = data.error.message || 'Gemini API Error';
+                
+                // If Rate Limited (429) or Quota Exceeded, attempt retry
+                if (msg.includes('quota exceeded') || msg.includes('limit: 20') || response.status === 429) {
+                    const waitMatch = msg.match(/retry in ([\d.]+)s/);
+                    const seconds = waitMatch ? parseFloat(waitMatch[1]) : 2;
+                    
+                    console.warn(`Quota reached. Retrying in ${seconds}s... (${retries} left)`);
+                    
+                    if (retries > 1) {
+                        await new Promise(r => setTimeout(r, Math.min(seconds * 1000, 5000))); // Max 5s wait per retry
+                        retries--;
+                        continue;
+                    }
+
+                    // On final retry, throw formatted error
                     const reactiveAt = new Date(Date.now() + seconds * 1000).toLocaleTimeString();
                     throw new Error(`Quota reached. Please wait ${seconds.toFixed(1)}s. System reactive at: ${reactiveAt}`);
                 }
+                throw new Error(msg);
             }
-            throw new Error(msg);
-        }
 
-        return data;
-    } catch (err) {
-        throw err;
+            return data;
+        } catch (err) {
+            lastError = err;
+            if (retries <= 1) throw err;
+            retries--;
+            await new Promise(r => setTimeout(r, 2000));
+        }
     }
+    throw lastError;
 };
 
 /**
