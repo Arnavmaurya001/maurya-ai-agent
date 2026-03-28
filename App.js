@@ -456,71 +456,121 @@ const useAgent = () => {
 
 const MobileHeader = () => (
     <div className="mobile-header">
-        <img src="./logo.png" alt="Maurya AI" className="h-7 w-auto" />
+        <img src="./logo.png" alt="M" className="h-6 w-6 rounded" />
+        <span className="mobile-logo-text">Maurya AI Pro</span>
     </div>
 );
 
-/**
- * 
- * CORE COMPONENTS
- * 
- */
-
-const Sidebar = ({ onNewChat, user, isDarkMode, onToggleTheme, onLogout }) => {
+const Sidebar = ({ onNewChat, user, isDarkMode, onToggleTheme, onLogout, history, onLoadSession, onDeleteSession, currentSessionId }) => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    
     const userInitials = user?.user_metadata?.full_name?.split(' ').map(n => n[0]).join('') || user?.email?.[0].toUpperCase() || '?';
 
     return (
-        <aside className="sidebar-icon-strip">
-            <div className="mb-8 desktop-only">
-                <img src="./logo.png" alt="M" className="w-8 h-8 rounded-lg" />
-            </div>
-            
-            <button className="sidebar-icon-btn" title="Create New Chat" onClick={onNewChat}><Plus size={22} /></button>
-            <button className="sidebar-icon-btn active" title="Search"><Search size={22} /></button>
-            <button className="sidebar-icon-btn" title="History"><History size={22} /></button>
-            <button className="sidebar-icon-btn" title="Project Tools"><Box size={22} /></button>
-            <button className="sidebar-icon-btn" title="Skills"><BookOpen size={22} /></button>
-            <button className="sidebar-icon-btn" title="Code"><Code size={22} /></button>
-
-            <div className="mt-auto flex flex-col items-center gap-4 pb-4">
-                <button 
-                    onClick={onToggleTheme}
-                    className="sidebar-icon-btn"
-                    title="Toggle Theme"
-                >
-                    {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-                </button>
-                
-                <div className="relative">
-                    <div 
-                        onClick={() => setIsProfileOpen(!isProfileOpen)}
-                        className="w-10 h-10 rounded-full bg-[var(--bg-tertiary)] border border-[var(--border-subtle)] flex items-center justify-center text-xs font-bold text-[var(--text-primary)] cursor-pointer hover:border-[var(--accent)] transition-all"
-                    >
-                        {userInitials}
-                    </div>
-                    
-                    {isProfileOpen && (
-                        <>
-                            <div onClick={() => setIsProfileOpen(false)} className="fixed inset-0 z-40" />
-                            <div className="absolute left-14 bottom-0 w-56 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl p-2 z-50 glass slide-up overflow-hidden">
-                                <div className="px-3 py-3 border-b border-[var(--border-subtle)] mb-1">
-                                    <div className="text-xs font-bold text-[var(--text-primary)] truncate">{user?.user_metadata?.full_name || 'Active User'}</div>
-                                    <div className="text-[10px] text-[var(--text-secondary)] truncate mt-0.5">{user?.email}</div>
-                                </div>
-                                <button 
-                                    onClick={() => { onLogout(); setIsProfileOpen(false); }}
-                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-xs text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
-                                >
-                                    <LogOut size={14} />
-                                    Log out
-                                </button>
-                            </div>
-                        </>
-                    )}
+        <>
+            <aside className="sidebar-icon-strip">
+                <div className="mb-8 desktop-only">
+                    <img src="./logo.png" alt="M" className="w-8 h-8 rounded-lg" />
                 </div>
-            </div>
-        </aside>
+                
+                <button className="sidebar-icon-btn" title="Create New Chat" onClick={onNewChat}><Plus size={22} /></button>
+                <button className="sidebar-icon-btn" title="Search"><Search size={22} /></button>
+                <button 
+                    className={`sidebar-icon-btn ${isHistoryOpen ? 'active' : ''}`} 
+                    title="History"
+                    onClick={() => setIsHistoryOpen(!isHistoryOpen)}
+                >
+                    <History size={22} />
+                </button>
+                <button className="sidebar-icon-btn" title="Project Tools"><Box size={22} /></button>
+                <button className="sidebar-icon-btn" title="Code"><Code size={22} /></button>
+
+                <div className="mt-auto flex flex-col items-center gap-4 pb-4">
+                    <button 
+                        onClick={onToggleTheme}
+                        className="sidebar-icon-btn"
+                        title="Toggle Theme"
+                    >
+                        {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                    </button>
+                    
+                    <div className="relative">
+                        <div 
+                            onClick={() => setIsProfileOpen(!isProfileOpen)}
+                            className="w-10 h-10 rounded-full bg-[var(--bg-tertiary)] border border-[var(--border-subtle)] flex items-center justify-center text-xs font-bold text-[var(--text-primary)] cursor-pointer hover:border-[var(--accent)] transition-all"
+                        >
+                            {userInitials}
+                        </div>
+                        
+                        {isProfileOpen && (
+                            <>
+                                <div onClick={() => setIsProfileOpen(false)} className="fixed inset-0 z-40" />
+                                <div className="absolute left-14 bottom-0 w-56 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl p-2 z-50 glass slide-up overflow-hidden">
+                                    <div className="px-3 py-3 border-b border-[var(--border-subtle)] mb-1">
+                                        <div className="text-xs font-bold text-[var(--text-primary)] truncate">{user?.user_metadata?.full_name || 'Active User'}</div>
+                                        <div className="text-[10px] text-[var(--text-secondary)] truncate mt-0.5">{user?.email}</div>
+                                    </div>
+                                    <button 
+                                        onClick={() => { onLogout(); setIsProfileOpen(false); }}
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-xs text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
+                                    >
+                                        <LogOut size={14} />
+                                        Log out
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </aside>
+
+            {isHistoryOpen && (
+                <>
+                    <div className="drawer-overlay" onClick={() => setIsHistoryOpen(false)} />
+                    <div className="history-drawer">
+                        <div className="p-6 border-b border-[var(--border-subtle)] flex items-center justify-between">
+                            <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500">History</h3>
+                            <button onClick={() => setIsHistoryOpen(false)} className="text-zinc-500 hover:text-white"><X size={18} /></button>
+                        </div>
+                        <div className="flex-1 overflow-auto p-3">
+                            {history.length === 0 ? (
+                                <div className="text-center py-12 text-zinc-600 text-xs italic">No history yet</div>
+                            ) : (
+                                history.map((session) => (
+                                    <div 
+                                        key={session.id} 
+                                        onClick={() => { onLoadSession(session); if(window.innerWidth < 768) setIsHistoryOpen(false); }}
+                                        className={`history-item group ${currentSessionId === session.id ? 'active' : ''}`}
+                                    >
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-sm font-medium truncate text-zinc-300 mb-0.5">
+                                                {session.messages?.[0]?.content || "Empty chat"}
+                                            </div>
+                                            <div className="text-[10px] text-zinc-600">{new Date(session.updatedAt).toLocaleDateString()}</div>
+                                        </div>
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); onDeleteSession(session.id); }}
+                                            className="opacity-0 group-hover:opacity-100 p-1.5 text-zinc-600 hover:text-red-500 transition-all rounded-lg"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                        <div className="p-4 border-t border-[var(--border-subtle)]">
+                            <button 
+                                onClick={() => { onNewChat(); setIsHistoryOpen(false); }}
+                                className="w-full flex items-center justify-center gap-2 py-3 bg-[var(--accent)] text-white rounded-xl text-xs font-bold uppercase tracking-widest"
+                            >
+                                <Plus size={14} /> New Chat
+                            </button>
+                        </div>
+                    </div>
+                </>
+            )}
+        </>
     );
 };
 
@@ -794,78 +844,6 @@ const Chat = ({ messages, isThinking, onSendMessage }) => {
     );
 };
 
-const Header = ({ onToggleSidebar, user, onLogout, isDarkMode, onToggleTheme }) => {
-    const [isProfileOpen, setIsProfileOpen] = useState(false);
-    const userInitials = user?.user_metadata?.full_name?.split(' ').map(n => n[0]).join('') || user?.email?.[0].toUpperCase() || '?';
-
-    return (
-        <header className="py-3 border-b border-[var(--border-subtle)] flex items-center justify-between px-4 md:px-8 glass sticky top-0 z-30">
-            <div className="flex items-center gap-5">
-                <button 
-                    onClick={onToggleSidebar}
-                    className="p-2.5 text-zinc-400 hover:text-[var(--text-primary)] transition-all bg-[var(--bg-tertiary)] md:hidden rounded-xl"
-                >
-                    <Menu size={20} />
-                </button>
-                <div className="flex items-center gap-4">
-                    <img src="./logo.png" alt="Maurya" className="w-7 h-7 rounded-lg shadow-md" />
-                    <span className="text-xs text-[var(--accent)] uppercase font-black tracking-[0.25em] pt-0.5">Maurya AI Pro</span>
-                </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-                <button 
-                    onClick={onToggleTheme}
-                    className="p-2.5 text-[var(--text-secondary)] hover:text-[var(--accent)] bg-[var(--bg-tertiary)] rounded-xl transition-all border border-[var(--border-subtle)]"
-                    title="Toggle Theme"
-                >
-                    {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-                </button>
-            </div>
-            
-            <div className="flex items-center gap-5">
-                <div className="hidden md:flex items-center gap-4">
-                    <div className="flex items-center gap-1.5">
-                        <div className="w-1 h-1 rounded-full bg-sky-500" />
-                        <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">3-Key Active</span>
-                    </div>
-                </div>
-                {user && (
-                    <div className="relative">
-                        <button 
-                            onClick={() => setIsProfileOpen(!isProfileOpen)}
-                            className="flex items-center gap-3 pl-4 border-l border-[#242427] hover:opacity-80 transition-all outline-none"
-                        >
-                            <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[10px] font-bold text-zinc-300">
-                                {userInitials}
-                            </div>
-                        </button>
-                        
-                        {isProfileOpen && (
-                            <>
-                                <div onClick={() => setIsProfileOpen(false)} className="fixed inset-0 z-40" />
-                                <div className="absolute right-0 mt-3 w-56 bg-[#0d0d0e] border border-[#1b1b1f] rounded-2xl shadow-2xl p-2 z-50 glass slide-up">
-                                    <div className="px-3 py-3 border-b border-[#1b1b1f] mb-1">
-                                        <div className="text-xs font-bold text-zinc-200 truncate">{user?.user_metadata?.full_name || 'Active User'}</div>
-                                        <div className="text-[10px] text-zinc-500 truncate mt-0.5">{user?.email}</div>
-                                    </div>
-                                    <button 
-                                        onClick={() => { onLogout(); setIsProfileOpen(false); }}
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-xs text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
-                                    >
-                                        <LogOut size={14} />
-                                        Log out
-                                    </button>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                )}
-            </div>
-        </header>
-    );
-};
-
 const ArtifactPanel = ({ artifact, onClose }) => {
     if (!artifact.isOpen) return null;
     return (
@@ -986,6 +964,10 @@ const App = () => {
                 isDarkMode={isDarkMode}
                 onToggleTheme={() => setIsDarkMode(!isDarkMode)}
                 onLogout={handleLogout}
+                history={history}
+                onLoadSession={loadSession}
+                onDeleteSession={deleteSession}
+                currentSessionId={currentSessionId}
             />
             
             <div className="flex-1 flex overflow-hidden">
