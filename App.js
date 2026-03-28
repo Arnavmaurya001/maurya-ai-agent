@@ -91,8 +91,8 @@ const GEMINI_TOOLS = [
     {
         google_search_retrieval: {
             dynamic_retrieval_config: {
-                mode: "UNSPECIFIED",
-                dynamic_threshold: 0
+                mode: "MODE_DYNAMIC",
+                dynamic_threshold: 0.3
             }
         }
     }
