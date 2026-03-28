@@ -419,37 +419,39 @@ const useAgent = () => {
  * 
  */
 
-const Sidebar = ({ history, currentSessionId, onNewChat, onLoadSession, onDeleteSession, isOpen, onClose }) => {
+const Sidebar = ({ history, currentSessionId, onNewChat, onLoadSession, onDeleteSession, isOpen, onClose, user, onLogout }) => {
+    const userInitials = user?.user_metadata?.full_name?.split(' ').map(n => n[0]).join('') || user?.email?.[0].toUpperCase() || '?';
+
     return (
         <>
             {/* Mobile Overlay */}
             {isOpen && (
-                <div onClick={onClose} className="fixed inset-0 z-50 mobile-overlay md:hidden" />
+                <div onClick={onClose} className="fixed inset-0 z-50 glass md:hidden opacity-60" />
             )}
             
-            <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-zinc-950 border-r border-zinc-900 flex flex-col sidebar-transition md:translate-x-0 md:static md:z-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                <div className="p-4 border-b border-zinc-900 flex items-center justify-between">
-                    <span className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold">History</span>
-                    <button onClick={onClose} className="md:hidden p-1 text-zinc-500 hover:text-white transition-colors">
-                        <X size={18} />
-                    </button>
+            <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#0d0d0e] border-r border-[#1b1b1f] flex flex-col sidebar-transition md:translate-x-0 md:static md:z-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <div className="p-4 border-b border-[#1b1b1f] flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold">Workspace</span>
+                    </div>
                 </div>
                 
-                <div className="p-4 border-b border-zinc-900">
+                <div className="p-4">
                     <button 
                         onClick={() => { onNewChat(); if(window.innerWidth < 768) onClose(); }}
-                        className="w-full h-11 flex items-center justify-center gap-2 bg-zinc-900 hover:bg-zinc-800 text-sm font-medium rounded-xl border border-zinc-800 transition-all active:scale-95 text-white"
+                        className="w-full h-11 flex items-center justify-center gap-2 bg-[#1b1b1f] hover:bg-[#27272a] text-sm font-medium rounded-xl border border-[#242427] transition-all active:scale-95 text-zinc-100"
                     >
                         <Plus size={18} /> New Chat
                     </button>
                 </div>
                 
-                <div className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
+                <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1">
                     {history.map(session => (
                         <div 
                             key={session.id}
                             onClick={() => { onLoadSession(session); if(window.innerWidth < 768) onClose(); }}
-                            className={`group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all ${currentSessionId === session.id ? 'bg-zinc-900 text-white' : 'hover:bg-zinc-900/50 text-zinc-400 hover:text-zinc-200'}`}
+                            className={`group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all ${currentSessionId === session.id ? 'bg-[#1b1b1f] text-white' : 'hover:bg-[#1b1b1f]/50 text-zinc-500 hover:text-zinc-300'}`}
                         >
                             <div className="flex items-center gap-3 overflow-hidden">
                                 <History size={16} className="shrink-0" />
@@ -465,9 +467,20 @@ const Sidebar = ({ history, currentSessionId, onNewChat, onLoadSession, onDelete
                     ))}
                 </div>
 
-                <div className="p-4 border-t border-zinc-900">
-                    <div className="flex items-center gap-3 px-3 py-2 text-zinc-500 text-[10px] uppercase tracking-widest font-bold">
-                        Cloud System Active
+                <div className="p-4 border-t border-[#1b1b1f] bg-[#0d0d0e]">
+                    <div className="flex items-center justify-between hover:bg-[#1b1b1f] p-2 rounded-xl transition-all cursor-pointer group">
+                        <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-xs font-bold text-zinc-200">
+                                {userInitials}
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-xs font-semibold text-zinc-200 truncate">{user?.user_metadata?.full_name || user?.email?.split('@')[0]}</span>
+                                <span className="text-[10px] text-zinc-550 truncate">Free Plan</span>
+                            </div>
+                        </div>
+                        <button onClick={onLogout} className="p-2 text-zinc-500 hover:text-white opacity-0 group-hover:opacity-100 transition-all">
+                            <X size={16} />
+                        </button>
                     </div>
                 </div>
             </aside>
@@ -647,29 +660,37 @@ const Chat = ({ messages, isThinking, onSendMessage }) => {
     );
 };
 
-const Header = ({ onToggleSidebar }) => {
+const Header = ({ onToggleSidebar, user, onLogout }) => {
+    const userInitials = user?.user_metadata?.full_name?.split(' ').map(n => n[0]).join('') || user?.email?.[0].toUpperCase() || '?';
+
     return (
-        <header className="py-3 border-b border-zinc-900 flex flex-col md:flex-row items-center justify-between px-4 md:px-6 glass sticky top-0 z-30 gap-3">
-            <div className="flex items-center gap-3 w-full md:w-auto">
+        <header className="py-2.5 border-b border-[#1b1b1f] flex items-center justify-between px-4 md:px-6 glass sticky top-0 z-30">
+            <div className="flex items-center gap-4">
                 <button 
                     onClick={onToggleSidebar}
-                    className="md:hidden p-2 text-zinc-100 bg-zinc-900/50 border border-zinc-800 rounded-lg hover:text-white hover:bg-zinc-800 transition-all active:scale-95"
-                    aria-label="Toggle Menu"
+                    className="p-2 text-zinc-400 hover:text-white transition-all bg-[#1b1b1f]/40 md:hidden rounded-lg"
                 >
-                    <Menu size={22} />
+                    <Menu size={20} />
                 </button>
-                <h1 className="font-semibold text-zinc-200 shrink-0 text-sm md:text-base">Maurya AI Cloud Agent</h1>
+                <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-zinc-550 uppercase font-bold tracking-[0.2em]">Maurya AI Pro</span>
+                </div>
             </div>
             
-            <div className="flex items-center gap-4 w-full md:w-auto justify-end">
-                <div className="flex items-center gap-2">
-                    <div className={`w-1.5 h-1.5 rounded-full bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]`} />
-                    <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold">Gemini 2.5</span>
+            <div className="flex items-center gap-5">
+                <div className="hidden md:flex items-center gap-4">
+                    <div className="flex items-center gap-1.5">
+                        <div className="w-1 h-1 rounded-full bg-sky-500" />
+                        <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">3-Key Active</span>
+                    </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <div className={`w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]`} />
-                    <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold">Sync Active</span>
-                </div>
+                {user && (
+                    <div className="flex items-center gap-3 pl-4 border-l border-[#242427]">
+                        <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[10px] font-bold text-zinc-300">
+                            {userInitials}
+                        </div>
+                    </div>
+                )}
             </div>
         </header>
     );
@@ -714,12 +735,27 @@ const App = () => {
     
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [artifact, setArtifact] = useState({ isOpen: false, title: '', content: '', language: '' });
+    const [user, setUser] = useState(null);
+
+    // Netlify Identity Logic
+    useEffect(() => {
+        if (window.netlifyIdentity) {
+            window.netlifyIdentity.on('init', user => setUser(user));
+            window.netlifyIdentity.on('login', user => {
+                setUser(user);
+                window.netlifyIdentity.close();
+            });
+            window.netlifyIdentity.on('logout', () => setUser(null));
+        }
+    }, []);
+
+    const handleLogin = () => window.netlifyIdentity.open();
+    const handleLogout = () => window.netlifyIdentity.logout();
 
     // Auto-detect artifacts in messages
     useEffect(() => {
-        const lastMsg = messages[prev => prev.length - 1];
+        const lastMsg = messages[messages.length - 1];
         if (lastMsg && lastMsg.role === 'model') {
-            // Find any tool calls for write_file
             const toolCalls = lastMsg.content?.filter(c => c.type === 'tool_use' && c.name === 'write_file');
             if (toolCalls && toolCalls.length > 0) {
                 const call = toolCalls[toolCalls.length - 1];
@@ -733,6 +769,26 @@ const App = () => {
         }
     }, [messages]);
 
+    if (!user) {
+        return (
+            <div className="h-screen w-full flex flex-col items-center justify-center bg-[#0a0a0b] text-center p-6">
+                <div className="w-16 h-16 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center mb-8 shadow-2xl">
+                    <Bot size={32} className="text-zinc-400" />
+                </div>
+                <h1 className="text-3xl font-semibold text-zinc-200 mb-4 tracking-tight">Welcome to Maurya AI Pro</h1>
+                <p className="text-zinc-500 max-w-sm mb-10 leading-relaxed">A professional, private workspace for secure AI collaboration and coding.</p>
+                <button 
+                    onClick={handleLogin}
+                    className="px-8 py-3 bg-white text-zinc-950 rounded-xl font-medium hover:bg-zinc-200 transition-all active:scale-95 shadow-xl"
+                >
+                    Sign In to Continue
+                </button>
+            </div>
+        );
+    }
+
+    const userInitials = user.user_metadata?.full_name?.split(' ').map(n => n[0]).join('') || user.email[0].toUpperCase();
+
     return (
         <div className="flex h-screen w-full overflow-hidden bg-[#0a0a0b] font-sans text-zinc-100 relative">
             <Sidebar 
@@ -743,11 +799,13 @@ const App = () => {
                 onDeleteSession={deleteSession}
                 isOpen={sidebarOpen}
                 onClose={() => setSidebarOpen(false)}
+                user={user}
+                onLogout={handleLogout}
             />
             
             <div className="flex-1 flex overflow-hidden">
                 <main className={`flex-1 flex flex-col relative overflow-hidden h-full sidebar-transition ${artifact.isOpen ? 'opacity-80 scale-[0.99] origin-left' : ''}`}>
-                    <Header onToggleSidebar={() => setSidebarOpen(true)} />
+                    <Header onToggleSidebar={() => setSidebarOpen(true)} user={user} onLogout={handleLogout} />
                     <Chat messages={messages} isThinking={isThinking} onSendMessage={sendMessage} />
                 </main>
                 
