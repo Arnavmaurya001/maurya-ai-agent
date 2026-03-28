@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    background-color: #09090b; /* zinc-950 */
+    color: #f4f4f5; /* zinc-100 */
+    overflow: hidden;
+}
+
+pre code {
+    font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* Responsive height for Chat */
+.chat-container { height: calc(100vh - 12rem); }
+@media (max-width: 768px) { .chat-container { height: calc(100vh - 14rem); } }
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+
+/* Prose Overrides */
+.prose pre { background-color: #18181b !important; border: 1px solid #27272a; margin: 1em 0; }
+.prose code { color: #e4e4e7 !important; background: transparent !important; padding: 0 !important; }
+
+/* Sidebar Transitions */
+.sidebar-transition {
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+/* Simple Glassmorphism */
+.glass {
+    background: rgba(9, 9, 11, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* Mobile Overlay */
+.mobile-overlay {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    transition: opacity 0.3s ease;
+}
