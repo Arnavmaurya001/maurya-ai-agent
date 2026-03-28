@@ -456,8 +456,10 @@ const useAgent = () => {
 
 const MobileHeader = () => (
     <div className="mobile-header">
-        <img src="./logo.png" alt="M" className="h-6 w-6 rounded" />
-        <span className="mobile-logo-text">Maurya AI Pro</span>
+        <div className="mobile-header-content">
+            <img src="./logo.png" alt="M" className="h-8 w-8 rounded-lg shadow-sm" />
+            <span className="mobile-logo-text">Maurya AI <span>Pro</span></span>
+        </div>
     </div>
 );
 
