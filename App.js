@@ -354,7 +354,8 @@ const useAgent = () => {
                 return m;
             } else {
                 // Model message: map our blocks to Gemini response parts
-                const parts = m.content.map(block => {
+                const contentBlocks = Array.isArray(m.content) ? m.content : [{ type: 'text', text: m.content }];
+                const parts = contentBlocks.map(block => {
                     if (block.type === 'text') return { text: block.text };
                     if (block.type === 'tool_use') return { functionCall: { name: block.name, args: block.input } };
                     return null;
@@ -389,7 +390,8 @@ const useAgent = () => {
                 setMessages(prev => [...prev, assistantMsg]);
                 geminiContents.push(candidate.content);
 
-                const toolCalls = assistantMsg.content.filter(b => b.type === 'tool_use');
+                const blocks = Array.isArray(assistantMsg.content) ? assistantMsg.content : [];
+                const toolCalls = blocks.filter(b => b.type === 'tool_use');
                 
                 if (toolCalls.length === 0) {
                     saveSession([...newMessages, assistantMsg]);
@@ -423,7 +425,7 @@ const useAgent = () => {
                 }
             }
         } catch (err) {
-            setMessages(prev => [...prev, { role: 'model', content: `**Error:** ${err.message}` }]);
+            setMessages(prev => [...prev, { role: 'model', content: [{ type: 'text', text: `**Error:** ${err.message}` }] }]);
         } finally {
             setIsThinking(false);
         }
