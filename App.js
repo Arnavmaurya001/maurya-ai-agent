@@ -104,6 +104,9 @@ const Mic = (props) => (
 const Check = (props) => (
     <Icon {...props}><polyline points="20 6 9 17 4 12"/></Icon>
 );
+const Wrench = (props) => (
+    <Icon {...props}><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></Icon>
+);
 const ChevronRight = (props) => (
     <Icon {...props}><path d="m9 18 6-6-6-6"/></Icon>
 );
@@ -520,25 +523,61 @@ const Markdown = ({ content }) => {
 };
 
 const ToolCall = ({ toolCall, result }) => {
+    const [isExpanded, setIsExpanded] = useState(true);
+    
     const toolNames = {
-        'web_search': 'Searching the web',
-        'write_file': 'Generating file',
+        'web_search': 'Fetching data',
+        'write_file': 'Writing file',
         'read_file': 'Reading code'
     };
 
+    const displayTitle = toolNames[toolCall.name] || 'Processing';
+    const query = toolCall.input?.query || toolCall.input?.path || '';
     const isError = result && result.startsWith('Error:');
 
     return (
-        <div className="flex items-center gap-3 py-2 px-1 text-[var(--accent)] opacity-80 fade-in">
-            {result ? (
-                isError ? <X size={14} className="text-red-500" /> : <Bot size={14} className="text-[var(--accent)]" />
-            ) : (
-                <Loader2 size={14} className="animate-spin text-[var(--accent)]" />
+        <div className="my-6">
+            <button 
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="flex items-center gap-2 group cursor-pointer hover:opacity-80 transition-all mb-4"
+            >
+                <span className="text-sm font-medium text-zinc-500">
+                    {displayTitle} {query && `for "${query}"`}
+                </span>
+                <ChevronDown size={14} className={`text-zinc-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {isExpanded && (
+                <div className="ml-2 border-l-2 border-zinc-900 pl-6 space-y-5 animate-slideDown">
+                    {/* Processing Step */}
+                    <div className="flex items-center gap-3">
+                        <Wrench size={16} className="text-zinc-500" />
+                        <span className="text-sm text-zinc-400 font-medium">{displayTitle}...</span>
+                    </div>
+
+                    {/* Result Step */}
+                    {result && (
+                        <div className="flex items-start gap-4">
+                            <div className="mt-0.5 px-2.5 py-1 bg-zinc-900 border border-zinc-800 rounded text-[9px] font-black text-zinc-500 uppercase tracking-[0.2em] shadow-sm">
+                                Result
+                            </div>
+                            <div className="flex-1 text-sm text-zinc-500 line-clamp-2 italic font-serif leading-relaxed">
+                                {typeof result === 'string' ? result.substring(0, 120) : 'Data retrieved successfully'}...
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Done Step */}
+                    {result && (
+                        <div className="flex items-center gap-3">
+                            <div className="w-5 h-5 rounded-full bg-zinc-900/50 flex items-center justify-center border border-zinc-800">
+                                <Check size={12} className="text-emerald-500" />
+                            </div>
+                            <span className="text-sm text-zinc-400 font-medium">Done</span>
+                        </div>
+                    )}
+                </div>
             )}
-            <span className="text-[11px] font-bold uppercase tracking-widest">
-                {toolNames[toolCall.name] || toolCall.name}
-                {result && !isError && ' (completed)'}
-            </span>
         </div>
     );
 };
