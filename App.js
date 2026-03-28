@@ -109,7 +109,17 @@ const callGemini = async (apiKey, contents, systemPrompt) => {
         const data = await response.json();
         
         if (data.error) {
-            throw new Error(data.error.message || 'Gemini API Error');
+            const msg = data.error.message || 'Gemini API Error';
+            // Specific parsing for quota/rate limit error
+            if (msg.includes('quota exceeded') || msg.includes('limit: 20')) {
+                const waitMatch = msg.match(/retry in ([\d.]+)s/);
+                if (waitMatch) {
+                    const seconds = parseFloat(waitMatch[1]);
+                    const reactiveAt = new Date(Date.now() + seconds * 1000).toLocaleTimeString();
+                    throw new Error(`Quota reached. Please wait ${seconds.toFixed(1)}s. System reactive at: ${reactiveAt}`);
+                }
+            }
+            throw new Error(msg);
         }
 
         return data;
