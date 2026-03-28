@@ -523,6 +523,8 @@ const Chat = ({ messages, isThinking, apiKey, onSendMessage }) => {
     );
 };
 
+const Header = () => {
+    return (
         <header className="py-4 border-b border-zinc-900 flex flex-col md:flex-row items-center justify-between px-6 bg-zinc-950/80 backdrop-blur-md gap-4">
             <h1 className="font-semibold text-zinc-200 shrink-0">Maurya AI Cloud Agent</h1>
             
@@ -541,6 +543,12 @@ const Chat = ({ messages, isThinking, apiKey, onSendMessage }) => {
 };
 
 const App = () => {
+    const { 
+        messages, isThinking, history, currentSessionId, apiKey, sendMessage, 
+        startNewChat, loadSession, deleteSession
+    } = useAgent();
+
+    return (
         <div className="flex h-screen w-full overflow-hidden bg-zinc-950 font-sans text-zinc-100">
             <Sidebar history={history} currentSessionId={currentSessionId} onNewChat={startNewChat} onLoadSession={loadSession} onDeleteSession={deleteSession} />
             <main className="flex-1 flex flex-col relative overflow-hidden h-full">
