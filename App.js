@@ -431,8 +431,8 @@ const Sidebar = ({ history, currentSessionId, onNewChat, onLoadSession, onDelete
             
             <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#0d0d0e] border-r border-[#1b1b1f] flex flex-col sidebar-transition md:translate-x-0 md:static md:z-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="p-4 border-b border-[#1b1b1f] flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <div className="flex items-center gap-3">
+                        <img src="./logo.png" alt="Maurya AI Logo" className="w-5 h-5 rounded shadow-sm opacity-90" />
                         <span className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold">Workspace</span>
                     </div>
                 </div>
@@ -672,7 +672,8 @@ const Header = ({ onToggleSidebar, user, onLogout }) => {
                 >
                     <Menu size={20} />
                 </button>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
+                    <img src="./logo.png" alt="Maurya AI" className="w-4 h-4 rounded shadow-sm opacity-80" />
                     <span className="text-[10px] text-zinc-550 uppercase font-bold tracking-[0.2em]">Maurya AI Pro</span>
                 </div>
             </div>
@@ -772,8 +773,8 @@ const App = () => {
     if (!user) {
         return (
             <div className="h-screen w-full flex flex-col items-center justify-center bg-[#0a0a0b] text-center p-6">
-                <div className="w-16 h-16 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center mb-8 shadow-2xl">
-                    <Bot size={32} className="text-zinc-400" />
+                <div className="w-20 h-20 mb-8 animate-float">
+                    <img src="./logo.png" alt="Maurya AI Logo" className="w-full h-full rounded-2xl shadow-2xl border border-zinc-800" />
                 </div>
                 <h1 className="text-3xl font-semibold text-zinc-200 mb-4 tracking-tight">Welcome to Maurya AI Pro</h1>
                 <p className="text-zinc-500 max-w-sm mb-10 leading-relaxed">A professional, private workspace for secure AI collaboration and coding.</p>
