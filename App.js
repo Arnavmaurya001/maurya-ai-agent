@@ -856,9 +856,21 @@ const App = () => {
         startNewChat, loadSession, deleteSession
     } = useAgent();
     
+    const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [artifact, setArtifact] = useState({ isOpen: false, title: '', content: '', language: '' });
     const [user, setUser] = useState(null);
+
+    // Sync theme with root element
+    useEffect(() => {
+        if (isDarkMode) {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+        }
+    }, [isDarkMode]);
 
     // Netlify Identity Logic
     useEffect(() => {
