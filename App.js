@@ -71,6 +71,12 @@ const Download = (props) => (
 const Maximize = (props) => (
     <Icon {...props}><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></Icon>
 );
+const Sun = (props) => (
+    <Icon {...props}><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></Icon>
+);
+const Moon = (props) => (
+    <Icon {...props}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></Icon>
+);
 const LogOut = (props) => (
     <Icon {...props}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></Icon>
 );
@@ -459,11 +465,11 @@ const Sidebar = ({ history, currentSessionId, onNewChat, onLoadSession, onDelete
                 <div onClick={onClose} className="fixed inset-0 z-50 glass md:hidden opacity-60" />
             )}
             
-            <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#fcfcfc] border-r border-[#e9ecef] flex flex-col sidebar-transition md:translate-x-0 md:static md:z-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                <div className="p-4 border-b border-[#e9ecef] flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <img src="./logo.png" alt="Maurya AI Logo" className="w-8 h-8 rounded-lg shadow-sm" />
-                        <span className="text-[#ff6000] text-[11px] uppercase tracking-widest font-black">Workspace</span>
+            <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-[var(--bg-secondary)] border-r border-[var(--border-subtle)] flex flex-col sidebar-transition md:translate-x-0 md:static md:z-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <div className="p-6 border-b border-[var(--border-subtle)] flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <img src="./logo.png" alt="Maurya AI Logo" className="w-14 h-14 rounded-2xl shadow-lg border border-[var(--border-subtle)]" />
+                        <span className="text-[var(--accent)] text-xs uppercase tracking-[0.3em] font-black">Maurya AI</span>
                     </div>
                 </div>
                 
@@ -697,16 +703,16 @@ const Chat = ({ messages, isThinking, onSendMessage }) => {
     };
 
     return (
-        <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-            <div className="flex-1 overflow-y-auto pt-8 pb-32">
+        <div className="flex-1 flex flex-col h-full overflow-hidden relative bg-[var(--bg-primary)]">
+            <div className="flex-1 overflow-y-auto pt-8 pb-32 scrollbar-none">
                 <div className="max-w-4xl mx-auto">
                     {messages.length === 0 && (
                         <div className="flex flex-col items-center justify-center h-[60vh] text-center px-4">
-                            <div className="w-12 h-12 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center mb-6 shadow-xl">
-                                <Bot size={24} className="text-zinc-400" />
+                            <div className="w-16 h-16 bg-[var(--bg-secondary)] border border-[var(--border-subtle)] rounded-2xl flex items-center justify-center mb-6 shadow-xl">
+                                <Bot size={28} className="text-zinc-400" />
                             </div>
-                            <h2 className="text-2xl font-semibold text-zinc-200 mb-2">How can I help you today?</h2>
-                            <p className="text-zinc-500 max-w-sm">From coding apps to searching the web, I am ready to collaborate with you.</p>
+                            <h2 className="text-3xl font-extrabold text-[var(--text-primary)] mb-2">How can I help you today?</h2>
+                            <p className="text-[var(--text-secondary)] max-w-sm text-lg">From coding apps to searching the web, I am ready to collaborate with you.</p>
                         </div>
                     )}
                     <div className="space-y-0">
@@ -714,7 +720,7 @@ const Chat = ({ messages, isThinking, onSendMessage }) => {
                     </div>
                     {isThinking && (
                         <div className="max-w-4xl mx-auto px-14 py-6">
-                            <Loader2 size={16} className="animate-spin text-zinc-600" />
+                            <Loader2 size={20} className="animate-spin text-[var(--accent)]" />
                         </div>
                     )}
                     <div ref={messagesEndRef} />
@@ -727,55 +733,46 @@ const Chat = ({ messages, isThinking, onSendMessage }) => {
                     {isAddMenuOpen && (
                         <>
                             <div onClick={() => setIsAddMenuOpen(false)} className="fixed inset-0 z-40" />
-                            <div className="absolute bottom-[calc(100%+8px)] left-0 w-64 bg-[#0d0d0e] border border-[#1b1b1f] rounded-2xl shadow-2xl p-1.5 z-50 glass slide-up overflow-hidden">
-                                <div className="space-y-0.5">
-                                    <button onClick={() => fileInputRef.current?.click()} className="w-full flex items-center gap-3 px-3 py-2.5 text-xs text-zinc-300 hover:bg-[#1b1b1f] rounded-xl transition-all">
-                                        <Paperclip size={16} className="text-zinc-500" /> Add files or photos
+                            <div className="absolute bottom-[calc(100%+12px)] left-0 w-72 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl p-2 z-50 glass slide-up overflow-hidden">
+                                <div className="space-y-1">
+                                    <button onClick={() => fileInputRef.current?.click()} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-xl transition-all">
+                                        <Paperclip size={18} className="text-[var(--accent)]" /> Add files or photos
                                     </button>
-                                    <button className="w-full flex items-center justify-between px-3 py-2.5 text-xs text-zinc-300 hover:bg-[#1b1b1f] rounded-xl transition-all opacity-60">
-                                        <div className="flex items-center gap-3"><Camera size={16} className="text-zinc-500" /> Take a screenshot</div>
+                                    <button className="w-full flex items-center justify-between px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-xl transition-all opacity-40">
+                                        <div className="flex items-center gap-3"><Camera size={18} className="text-zinc-500" /> Take a screenshot</div>
                                     </button>
-                                    <button className="w-full flex items-center justify-between px-3 py-2.5 text-xs text-zinc-300 hover:bg-[#1b1b1f] rounded-xl transition-all opacity-60">
-                                        <div className="flex items-center gap-3"><Box size={16} className="text-zinc-500" /> Add to project</div>
+                                    <button className="w-full flex items-center justify-between px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-xl transition-all opacity-40">
+                                        <div className="flex items-center gap-3"><Box size={18} className="text-zinc-500" /> Add to project</div>
                                         <ChevronRight size={14} className="text-zinc-650" />
                                     </button>
-                                    <div className="h-px bg-[#1b1b1f] my-1.5" />
-                                    <button className="w-full flex items-center justify-between px-3 py-2.5 text-xs text-zinc-300 hover:bg-[#1b1b1f] rounded-xl transition-all opacity-60">
-                                        <div className="flex items-center gap-3"><BookOpen size={16} className="text-zinc-500" /> Skills</div>
+                                    <div className="h-px bg-[var(--border-subtle)] my-2" />
+                                    <button className="w-full flex items-center justify-between px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-xl transition-all opacity-40">
+                                        <div className="flex items-center gap-3"><BookOpen size={18} className="text-zinc-500" /> Skills</div>
                                         <ChevronRight size={14} className="text-zinc-650" />
                                     </button>
-                                    <button className="w-full flex items-center gap-3 px-3 py-2.5 text-xs text-zinc-300 hover:bg-[#1b1b1f] rounded-xl transition-all opacity-60">
-                                        <div className="w-4 h-4 rounded-sm border border-zinc-700 flex items-center justify-center shrink-0">
-                                            <div className="w-1.5 h-1.5 bg-zinc-700 rounded-sm" />
-                                        </div> Add connectors
-                                    </button>
-                                    <div className="h-px bg-[#1b1b1f] my-1.5" />
-                                    <button onClick={() => setWebSearchEnabled(!webSearchEnabled)} className="w-full flex items-center justify-between px-3 py-2.5 text-xs text-zinc-300 hover:bg-[#1b1b1f] rounded-xl transition-all group">
-                                        <div className="flex items-center gap-3"><Globe size={16} className={webSearchEnabled ? 'text-blue-400' : 'text-zinc-500'} /> Web search</div>
-                                        {webSearchEnabled && <Check size={14} className="text-blue-400" />}
-                                    </button>
-                                    <button className="w-full flex items-center justify-between px-3 py-2.5 text-xs text-zinc-300 hover:bg-[#1b1b1f] rounded-xl transition-all opacity-60">
-                                        <div className="flex items-center gap-3"><Wand size={16} className="text-zinc-500" /> Use style</div>
-                                        <ChevronRight size={14} className="text-zinc-650" />
+                                    <div className="h-px bg-[var(--border-subtle)] my-2" />
+                                    <button onClick={() => setWebSearchEnabled(!webSearchEnabled)} className="w-full flex items-center justify-between px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-xl transition-all group">
+                                        <div className="flex items-center gap-3"><Globe size={18} className={webSearchEnabled ? 'text-[var(--accent)]' : 'text-zinc-500'} /> Web search</div>
+                                        {webSearchEnabled && <Check size={16} className="text-[var(--accent)]" />}
                                     </button>
                                 </div>
                             </div>
                         </>
                     )}
 
-                    <form onSubmit={handleSubmit} className="input-island relative flex items-center p-2 gap-2">
+                    <form onSubmit={handleSubmit} className="input-island relative flex items-center p-3 gap-3">
                         <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" multiple />
-                        <button type="button" onClick={() => setIsAddMenuOpen(!isAddMenuOpen)} className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors">
-                            <Plus size={20} className={isAddMenuOpen ? 'rotate-45' : ''} />
+                        <button type="button" onClick={() => setIsAddMenuOpen(!isAddMenuOpen)} className="p-2 text-zinc-500 hover:text-[var(--accent)] transition-colors">
+                            <Plus size={22} className={isAddMenuOpen ? 'rotate-45' : ''} />
                         </button>
                         
                         <div className="flex-1 flex flex-col min-w-0">
                             {attachedFiles.length > 0 && (
-                                <div className="flex flex-wrap gap-1.5 px-3 py-1 mb-1">
+                                <div className="flex flex-wrap gap-2 px-3 py-1 mb-2">
                                     {attachedFiles.map((name, i) => (
-                                        <div key={i} className="flex items-center gap-1.5 px-2 py-1 bg-zinc-800 border border-zinc-700 rounded-lg text-[10px] text-zinc-300">
-                                            <Paperclip size={10} /> {name}
-                                            <X size={10} className="ml-1 cursor-pointer hover:text-red-400" onClick={() => setAttachedFiles(f => f.filter((_, idx) => idx !== i))} />
+                                        <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-secondary)] border border-[var(--border-subtle)] rounded-xl text-[11px] text-[var(--text-secondary)]">
+                                            <Paperclip size={12} className="text-[var(--accent)]" /> {name}
+                                            <X size={12} className="ml-2 cursor-pointer hover:text-red-500" onClick={() => setAttachedFiles(f => f.filter((_, idx) => idx !== i))} />
                                         </div>
                                     ))}
                                 </div>
@@ -783,24 +780,24 @@ const Chat = ({ messages, isThinking, onSendMessage }) => {
                             <input 
                                 placeholder="Message Maurya AI..." value={input}
                                 onChange={(e) => setInput(e.target.value)}
-                                className="bg-transparent border-none py-3 px-3 text-sm outline-none text-white placeholder-zinc-600"
+                                className="bg-transparent border-none py-2 px-3 text-base outline-none text-[var(--text-primary)] placeholder-zinc-500"
                             />
                         </div>
 
-                        <div className="flex items-center gap-1 pr-1">
+                        <div className="flex items-center gap-2 pr-1">
                             <button 
                                 type="button" 
                                 onClick={toggleVoice}
-                                className={`p-2 rounded-xl transition-all ${isListening ? 'text-red-400 bg-red-400/10 animate-pulse' : 'text-zinc-500 hover:text-zinc-300'}`}
+                                className={`p-2.5 rounded-2xl transition-all ${isListening ? 'text-white bg-[var(--accent)] animate-pulse shadow-lg' : 'text-zinc-400 hover:text-[var(--accent)] bg-[var(--bg-secondary)]'}`}
                             >
-                                <Mic size={18} />
+                                <Mic size={20} />
                             </button>
-                            <button type="submit" disabled={(!input.trim() && attachedFiles.length === 0) || isThinking} className={`p-2 rounded-xl transition-all ${(!input.trim() && attachedFiles.length === 0) || isThinking ? 'text-zinc-700' : 'text-white bg-zinc-800 hover:bg-zinc-700'}`}>
-                                <Send size={18} />
+                            <button type="submit" disabled={(!input.trim() && attachedFiles.length === 0) || isThinking} className={`p-2.5 rounded-2xl transition-all ${(!input.trim() && attachedFiles.length === 0) || isThinking ? 'text-zinc-300 bg-zinc-100 opacity-50' : 'text-white bg-[var(--accent)] hover:opacity-90 shadow-lg'}`}>
+                                <Send size={20} />
                             </button>
                         </div>
                     </form>
-                    <div className="text-[10px] text-zinc-600 text-center mt-3 tracking-wide">
+                    <div className="text-[10px] text-zinc-500 text-center mt-3 tracking-widest uppercase font-bold opacity-60">
                         Maurya AI can make mistakes. Please verify important information.
                     </div>
                 </div>
@@ -809,23 +806,33 @@ const Chat = ({ messages, isThinking, onSendMessage }) => {
     );
 };
 
-const Header = ({ onToggleSidebar, user, onLogout }) => {
+const Header = ({ onToggleSidebar, user, onLogout, isDarkMode, onToggleTheme }) => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const userInitials = user?.user_metadata?.full_name?.split(' ').map(n => n[0]).join('') || user?.email?.[0].toUpperCase() || '?';
 
     return (
-        <header className="py-2.5 border-b border-[#e9ecef] flex items-center justify-between px-4 md:px-6 glass sticky top-0 z-30">
-            <div className="flex items-center gap-4">
+        <header className="py-3 border-b border-[var(--border-subtle)] flex items-center justify-between px-4 md:px-8 glass sticky top-0 z-30">
+            <div className="flex items-center gap-5">
                 <button 
                     onClick={onToggleSidebar}
-                    className="p-2 text-zinc-400 hover:text-zinc-900 transition-all bg-zinc-50 md:hidden rounded-lg"
+                    className="p-2.5 text-zinc-400 hover:text-[var(--text-primary)] transition-all bg-[var(--bg-tertiary)] md:hidden rounded-xl"
                 >
                     <Menu size={20} />
                 </button>
-                <div className="flex items-center gap-3">
-                    <img src="./logo.png" alt="Maurya AI" className="w-5 h-5 rounded shadow-sm" />
-                    <span className="text-[11px] text-[#ff6000] uppercase font-black tracking-[0.2em] pt-0.5">Maurya AI Pro</span>
+                <div className="flex items-center gap-4">
+                    <img src="./logo.png" alt="Maurya" className="w-7 h-7 rounded-lg shadow-md" />
+                    <span className="text-xs text-[var(--accent)] uppercase font-black tracking-[0.25em] pt-0.5">Maurya AI Pro</span>
                 </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+                <button 
+                    onClick={onToggleTheme}
+                    className="p-2.5 text-[var(--text-secondary)] hover:text-[var(--accent)] bg-[var(--bg-tertiary)] rounded-xl transition-all border border-[var(--border-subtle)]"
+                    title="Toggle Theme"
+                >
+                    {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                </button>
             </div>
             
             <div className="flex items-center gap-5">
