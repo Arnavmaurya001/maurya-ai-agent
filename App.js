@@ -466,21 +466,49 @@ const Markdown = ({ content }) => {
 
 const ToolCall = ({ toolCall, result }) => {
     const [isExpanded, setIsExpanded] = useState(false);
+    
+    const toolNames = {
+        'web_search': 'Searching the web',
+        'write_file': 'Generating file',
+        'read_file': 'Reading code'
+    };
+
+    const isError = result && result.startsWith('Error:');
+
     return (
-        <div className="my-3 border border-zinc-800 bg-zinc-900/40 rounded-xl overflow-hidden shadow-sm">
-            <button onClick={() => setIsExpanded(!isExpanded)} className="w-full flex items-center justify-between p-3 hover:bg-zinc-800/50 transition-colors">
-                <div className="flex items-center gap-3">
-                    <div className="bg-zinc-800 p-1.5 rounded-lg text-zinc-400"><Code size={14} /></div>
-                    <span className="text-sm font-medium text-zinc-300">{toolCall.name}</span>
+        <div className="flex flex-col">
+            <button 
+                onClick={() => setIsExpanded(!isExpanded)} 
+                className={`tool-pill group ${isError ? 'error' : ''}`}
+            >
+                <div className="flex items-center gap-2.5">
+                    {result ? (
+                        isError ? <X size={14} className="text-red-500" /> : <Bot size={14} className="text-zinc-500" />
+                    ) : (
+                        <Loader2 size={14} className="animate-spin text-zinc-500" />
+                    )}
+                    <span className="text-xs font-medium text-zinc-400 group-hover:text-zinc-300 transition-colors">
+                        {toolNames[toolCall.name] || toolCall.name}
+                        {result && !isError && ' (completed)'}
+                    </span>
+                    <ChevronDown size={12} className={`text-zinc-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                 </div>
-                {result ? <Bot size={14} className="text-zinc-600" /> : <Loader2 size={14} className="animate-spin text-zinc-600" />}
             </button>
+            
             {isExpanded && (
-                <div className="px-4 pb-4 border-t border-zinc-800/50 bg-zinc-950/30">
-                    <pre className="text-[10px] text-zinc-500 overflow-x-auto mt-2 p-2 bg-black/20 rounded">
+                <div className="tool-details sidebar-transition">
+                    <div className="text-zinc-500 mb-2 uppercase text-[9px] tracking-widest font-bold">Machine Data</div>
+                    <pre className="text-zinc-400 overflow-x-auto">
                         {JSON.stringify(toolCall.input, null, 2)}
                     </pre>
-                    {result && <div className="mt-2 text-xs text-sky-400 border-t border-zinc-800/20 pt-2">{result}</div>}
+                    {result && (
+                        <>
+                            <div className="mt-4 text-zinc-500 mb-2 uppercase text-[9px] tracking-widest font-bold">Response</div>
+                            <div className={`text-xs ${isError ? 'text-red-400' : 'text-zinc-300'}`}>
+                                {result}
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
         </div>
