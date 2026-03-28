@@ -7,7 +7,19 @@
     --border-subtle: #e9ecef;
     --text-primary: #1a1a1a;
     --text-secondary: #495057;
-    --accent: #ff6000; /* M1 Orange */
+    --accent: #ff6000; /* Maurya Orange */
+    --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+}
+
+.dark {
+    --bg-primary: #0a0a0b;
+    --bg-secondary: #141416;
+    --bg-tertiary: #1b1b1f;
+    --border-subtle: #242427;
+    --text-primary: #e4e4e7;
+    --text-secondary: #a1a1aa;
+    --accent: #ff6000; /* Constant Maurya Orange */
+    --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
 }
 
 body {
