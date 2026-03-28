@@ -62,6 +62,15 @@ const Code = (props) => (
 const ChevronDown = (props) => (
     <Icon {...props}><path d="m6 9 6 6 6-6"/></Icon>
 );
+const Copy = (props) => (
+    <Icon {...props}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></Icon>
+);
+const Download = (props) => (
+    <Icon {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></Icon>
+);
+const Maximize = (props) => (
+    <Icon {...props}><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></Icon>
+);
 
 /**
  * 
@@ -478,15 +487,22 @@ const ToolCall = ({ toolCall, result }) => {
     );
 };
 
-const Message = ({ msg }) => {
+const Message = ({ msg, onOpenArtifact }) => {
     const isUser = msg.role === 'user';
+    
+    // Check if message has code that could be an artifact
+    const hasCode = !isUser && typeof msg.content === 'string' && msg.content.includes('```');
+
     return (
-        <div className={`flex gap-5 px-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
-            <div className={`flex gap-4 max-w-[90%] ${isUser ? 'flex-row-reverse' : ''}`}>
-                <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center border ${isUser ? 'bg-zinc-800 border-zinc-700' : 'bg-transparent border-zinc-800'}`}>
-                    {isUser ? <User size={16} /> : <Bot size={16} className="text-zinc-400" />}
-                </div>
-                <div className={`overflow-x-auto ${isUser ? 'bg-zinc-800/80 p-4 rounded-2xl text-zinc-200' : ''}`}>
+        <div className={`w-full group ${isUser ? 'flex justify-end' : 'ai-message'}`}>
+            <div className={`flex gap-6 max-w-4xl mx-auto w-full px-4 ${isUser ? 'justify-end' : ''}`}>
+                {!isUser && (
+                    <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0 mt-1">
+                        <Bot size={16} className="text-zinc-400" />
+                    </div>
+                )}
+                
+                <div className={`flex-1 min-w-0 ${isUser ? 'user-message' : ''}`}>
                     {Array.isArray(msg.content) ? (
                         msg.content.map((block, idx) => {
                             if (block.type === 'text') return <Markdown key={idx} content={block.text} />;
@@ -498,14 +514,14 @@ const Message = ({ msg }) => {
                     )}
                     
                     {!isUser && msg.groundingMetadata?.groundingChunks && (
-                        <div className="mt-4 pt-4 border-t border-zinc-900">
-                            <div className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-2 flex items-center gap-2">
-                                <Search size={12} /> Sources & Grounding
+                        <div className="mt-6 pt-6 border-t border-zinc-900/50">
+                            <div className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-3 flex items-center gap-2">
+                                <Search size={12} /> Search Grounding
                             </div>
                             <div className="flex flex-wrap gap-2">
                                 {msg.groundingMetadata.groundingChunks.map((chunk, i) => (
                                     chunk.web && (
-                                        <a key={i} href={chunk.web.uri} target="_blank" rel="noopener noreferrer" className="text-[11px] bg-zinc-900 border border-zinc-800 px-2 py-1 rounded hover:bg-zinc-800 transition-colors text-sky-400 truncate max-w-[200px]">
+                                        <a key={i} href={chunk.web.uri} target="_blank" rel="noopener noreferrer" className="text-[11px] bg-zinc-900/50 border border-zinc-800 px-3 py-1.5 rounded-lg hover:bg-zinc-800 transition-all text-sky-400 truncate max-w-[240px]">
                                             {chunk.web.title || chunk.web.uri}
                                         </a>
                                     )
@@ -514,12 +530,18 @@ const Message = ({ msg }) => {
                         </div>
                     )}
                 </div>
+
+                {isUser && (
+                    <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0 mt-1">
+                        <User size={16} />
+                    </div>
+                )}
             </div>
         </div>
     );
 };
 
-const Chat = ({ messages, isThinking, apiKey, onSendMessage }) => {
+const Chat = ({ messages, isThinking, onSendMessage }) => {
     const [input, setInput] = useState('');
     const messagesEndRef = useRef(null);
     useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, isThinking]);
@@ -532,31 +554,49 @@ const Chat = ({ messages, isThinking, apiKey, onSendMessage }) => {
     };
 
     return (
-        <div className="flex-1 flex flex-col h-full overflow-hidden">
-            <div className="flex-1 overflow-y-auto px-4 py-8">
-                <div className="max-w-3xl mx-auto space-y-10">
+        <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+            <div className="flex-1 overflow-y-auto pt-8 pb-32">
+                <div className="max-w-4xl mx-auto">
                     {messages.length === 0 && (
-                        <div className="flex flex-col items-center justify-center h-[50vh] text-center opacity-60">
-                            <Bot size={32} className="mb-4 text-zinc-500" />
-                            <h2 className="text-xl font-semibold text-zinc-300">Maurya AI is ready. What shall we build?</h2>
+                        <div className="flex flex-col items-center justify-center h-[60vh] text-center px-4">
+                            <div className="w-12 h-12 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center mb-6 shadow-xl">
+                                <Bot size={24} className="text-zinc-400" />
+                            </div>
+                            <h2 className="text-2xl font-semibold text-zinc-200 mb-2">How can I help you today?</h2>
+                            <p className="text-zinc-500 max-w-sm">From coding apps to searching the web, I am ready to collaborate with you.</p>
                         </div>
                     )}
-                    {messages.map((msg, i) => <Message key={i} msg={msg} />)}
-                    {isThinking && <Loader2 size={16} className="animate-spin text-zinc-600 ml-12" />}
+                    <div className="space-y-0">
+                        {messages.map((msg, i) => <Message key={i} msg={msg} />)}
+                    </div>
+                    {isThinking && (
+                        <div className="max-w-4xl mx-auto px-14 py-6">
+                            <Loader2 size={16} className="animate-spin text-zinc-600" />
+                        </div>
+                    )}
                     <div ref={messagesEndRef} />
                 </div>
             </div>
-            <div className="p-6 border-t border-zinc-900 bg-zinc-950/50">
-                <form onSubmit={handleSubmit} className="max-w-3xl mx-auto relative">
-                    <input 
-                        placeholder="Type a message..." value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl py-4 pl-4 pr-14 text-sm outline-none text-white"
-                    />
-                    <button type="submit" disabled={!input.trim() || isThinking} className="absolute right-3 bottom-3 p-2 bg-zinc-200 text-zinc-950 rounded-xl hover:bg-white transition-all">
-                        <Send size={18} />
-                    </button>
-                </form>
+            
+            <div className="absolute bottom-0 left-0 right-0 p-6 pointer-events-none">
+                <div className="max-w-3xl mx-auto pointer-events-auto">
+                    <form onSubmit={handleSubmit} className="input-island relative flex items-center p-2 gap-2">
+                        <button type="button" className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors">
+                            <Plus size={20} />
+                        </button>
+                        <input 
+                            placeholder="Message Maurya AI..." value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            className="flex-1 bg-transparent border-none py-3 text-sm outline-none text-white placeholder-zinc-600"
+                        />
+                        <button type="submit" disabled={!input.trim() || isThinking} className={`p-2 rounded-xl transition-all ${!input.trim() || isThinking ? 'text-zinc-700' : 'text-white bg-zinc-800 hover:bg-zinc-700'}`}>
+                            <Send size={18} />
+                        </button>
+                    </form>
+                    <div className="text-[10px] text-zinc-600 text-center mt-3 tracking-wide">
+                        Maurya AI can make mistakes. Please verify important information.
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -590,6 +630,37 @@ const Header = ({ onToggleSidebar }) => {
     );
 };
 
+const ArtifactPanel = ({ artifact, onClose }) => {
+    if (!artifact.isOpen) return null;
+    return (
+        <div className="artifact-pane w-full md:w-[600px] lg:w-[800px] flex flex-col h-full shadow-2xl relative z-40">
+            <div className="artifact-header flex items-center justify-between p-4 px-6 h-14">
+                <div className="flex items-center gap-4">
+                    <div className="p-1.5 bg-zinc-800 rounded text-zinc-400"><Code size={14} /></div>
+                    <span className="text-sm font-semibold text-zinc-200 uppercase tracking-wider">{artifact.title}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button className="p-2 text-zinc-500 hover:text-white transition-colors" title="Copy Code">
+                        <Copy size={16} />
+                    </button>
+                    <button className="p-2 text-zinc-500 hover:text-white transition-colors" title="Download">
+                        <Download size={16} />
+                    </button>
+                    <div className="w-px h-4 bg-zinc-800 mx-2" />
+                    <button onClick={onClose} className="p-2 text-zinc-500 hover:text-white transition-colors">
+                        <X size={18} />
+                    </button>
+                </div>
+            </div>
+            <div className="flex-1 overflow-auto p-6 bg-[#09090b]">
+                <pre className="text-xs leading-relaxed text-zinc-300 font-mono">
+                    <code>{artifact.content}</code>
+                </pre>
+            </div>
+        </div>
+    );
+};
+
 const App = () => {
     const { 
         messages, isThinking, history, currentSessionId, apiKey, sendMessage, 
@@ -597,9 +668,28 @@ const App = () => {
     } = useAgent();
     
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [artifact, setArtifact] = useState({ isOpen: false, title: '', content: '', language: '' });
+
+    // Auto-detect artifacts in messages
+    useEffect(() => {
+        const lastMsg = messages[prev => prev.length - 1];
+        if (lastMsg && lastMsg.role === 'model') {
+            // Find any tool calls for write_file
+            const toolCalls = lastMsg.content?.filter(c => c.type === 'tool_use' && c.name === 'write_file');
+            if (toolCalls && toolCalls.length > 0) {
+                const call = toolCalls[toolCalls.length - 1];
+                setArtifact({
+                    isOpen: true,
+                    title: call.input.path,
+                    content: call.input.content,
+                    language: call.input.path.split('.').pop()
+                });
+            }
+        }
+    }, [messages]);
 
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-zinc-950 font-sans text-zinc-100 relative">
+        <div className="flex h-screen w-full overflow-hidden bg-[#0a0a0b] font-sans text-zinc-100 relative">
             <Sidebar 
                 history={history} 
                 currentSessionId={currentSessionId} 
@@ -609,10 +699,18 @@ const App = () => {
                 isOpen={sidebarOpen}
                 onClose={() => setSidebarOpen(false)}
             />
-            <main className="flex-1 flex flex-col relative overflow-hidden h-full">
-                <Header onToggleSidebar={() => setSidebarOpen(true)} />
-                <Chat messages={messages} isThinking={isThinking} apiKey={apiKey} onSendMessage={sendMessage} />
-            </main>
+            
+            <div className="flex-1 flex overflow-hidden">
+                <main className={`flex-1 flex flex-col relative overflow-hidden h-full sidebar-transition ${artifact.isOpen ? 'opacity-80 scale-[0.99] origin-left' : ''}`}>
+                    <Header onToggleSidebar={() => setSidebarOpen(true)} />
+                    <Chat messages={messages} isThinking={isThinking} onSendMessage={sendMessage} />
+                </main>
+                
+                <ArtifactPanel 
+                    artifact={artifact} 
+                    onClose={() => setArtifact({ ...artifact, isOpen: false })} 
+                />
+            </div>
         </div>
     );
 };
