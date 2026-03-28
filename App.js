@@ -74,6 +74,33 @@ const Maximize = (props) => (
 const LogOut = (props) => (
     <Icon {...props}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></Icon>
 );
+const Paperclip = (props) => (
+    <Icon {...props}><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.51a2 2 0 0 1-2.83-2.83l8.49-8.48"/></Icon>
+);
+const Camera = (props) => (
+    <Icon {...props}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></Icon>
+);
+const Box = (props) => (
+    <Icon {...props}><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></Icon>
+);
+const BookOpen = (props) => (
+    <Icon {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></Icon>
+);
+const Globe = (props) => (
+    <Icon {...props}><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></Icon>
+);
+const Wand = (props) => (
+    <Icon {...props}><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.21 1.21 0 0 0 1.72 0L21.64 5.36a1.21 1.21 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v1"/><path d="M19 2v1"/><path d="M10 2v1"/><path d="M7 2v1"/><path d="M15 2v1"/><path d="M8 11v1"/><path d="M8 5v1"/><path d="M20 10v1"/><path d="M14 5v1"/></Icon>
+);
+const Mic = (props) => (
+    <Icon {...props}><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></Icon>
+);
+const Check = (props) => (
+    <Icon {...props}><polyline points="20 6 9 17 4 12"/></Icon>
+);
+const ChevronRight = (props) => (
+    <Icon {...props}><path d="m9 18 6-6-6-6"/></Icon>
+);
 
 /**
  * 
@@ -601,14 +628,72 @@ const Message = ({ msg, onOpenArtifact }) => {
 
 const Chat = ({ messages, isThinking, onSendMessage }) => {
     const [input, setInput] = useState('');
+    const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+    const [isListening, setIsListening] = useState(false);
+    const [attachedFiles, setAttachedFiles] = useState([]);
+    const [webSearchEnabled, setWebSearchEnabled] = useState(true);
+    
     const messagesEndRef = useRef(null);
+    const fileInputRef = useRef(null);
+    const recognitionRef = useRef(null);
+
     useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, isThinking]);
+
+    // Voice Command Logic
+    useEffect(() => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            recognitionRef.current = new SpeechRecognition();
+            recognitionRef.current.continuous = true;
+            recognitionRef.current.interimResults = true;
+            
+            recognitionRef.current.onresult = (event) => {
+                const transcript = Array.from(event.results)
+                    .map(result => result[0])
+                    .map(result => result.transcript)
+                    .join('');
+                setInput(transcript);
+            };
+            
+            recognitionRef.current.onerror = (event) => {
+                console.error("Speech Recognition Error:", event.error);
+                setIsListening(false);
+            };
+        }
+    }, []);
+
+    const toggleVoice = () => {
+        if (!recognitionRef.current) return alert("Speech recognition not supported in this browser.");
+        if (isListening) {
+            recognitionRef.current.stop();
+        } else {
+            recognitionRef.current.start();
+        }
+        setIsListening(!isListening);
+    };
+
+    const handleFileUpload = (e) => {
+        const files = Array.from(e.target.files);
+        setAttachedFiles(prev => [...prev, ...files.map(f => f.name)]);
+        setIsAddMenuOpen(false);
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!input.trim() || isThinking) return;
-        onSendMessage(input);
+        if ((!input.trim() && attachedFiles.length === 0) || isThinking) return;
+        
+        let finalInput = input;
+        if (attachedFiles.length > 0) {
+            finalInput = `[Files Attached: ${attachedFiles.join(', ')}]\n\n${input}`;
+        }
+        
+        onSendMessage(finalInput);
         setInput('');
+        setAttachedFiles([]);
+        if (isListening) {
+            recognitionRef.current.stop();
+            setIsListening(false);
+        }
     };
 
     return (
@@ -637,19 +722,83 @@ const Chat = ({ messages, isThinking, onSendMessage }) => {
             </div>
             
             <div className="absolute bottom-0 left-0 right-0 p-6 pointer-events-none">
-                <div className="max-w-3xl mx-auto pointer-events-auto">
+                <div className="max-w-3xl mx-auto pointer-events-auto relative">
+                    {/* Add Menu Popover */}
+                    {isAddMenuOpen && (
+                        <>
+                            <div onClick={() => setIsAddMenuOpen(false)} className="fixed inset-0 z-40" />
+                            <div className="absolute bottom-[calc(100%+8px)] left-0 w-64 bg-[#0d0d0e] border border-[#1b1b1f] rounded-2xl shadow-2xl p-1.5 z-50 glass slide-up overflow-hidden">
+                                <div className="space-y-0.5">
+                                    <button onClick={() => fileInputRef.current?.click()} className="w-full flex items-center gap-3 px-3 py-2.5 text-xs text-zinc-300 hover:bg-[#1b1b1f] rounded-xl transition-all">
+                                        <Paperclip size={16} className="text-zinc-500" /> Add files or photos
+                                    </button>
+                                    <button className="w-full flex items-center justify-between px-3 py-2.5 text-xs text-zinc-300 hover:bg-[#1b1b1f] rounded-xl transition-all opacity-60">
+                                        <div className="flex items-center gap-3"><Camera size={16} className="text-zinc-500" /> Take a screenshot</div>
+                                    </button>
+                                    <button className="w-full flex items-center justify-between px-3 py-2.5 text-xs text-zinc-300 hover:bg-[#1b1b1f] rounded-xl transition-all opacity-60">
+                                        <div className="flex items-center gap-3"><Box size={16} className="text-zinc-500" /> Add to project</div>
+                                        <ChevronRight size={14} className="text-zinc-650" />
+                                    </button>
+                                    <div className="h-px bg-[#1b1b1f] my-1.5" />
+                                    <button className="w-full flex items-center justify-between px-3 py-2.5 text-xs text-zinc-300 hover:bg-[#1b1b1f] rounded-xl transition-all opacity-60">
+                                        <div className="flex items-center gap-3"><BookOpen size={16} className="text-zinc-500" /> Skills</div>
+                                        <ChevronRight size={14} className="text-zinc-650" />
+                                    </button>
+                                    <button className="w-full flex items-center gap-3 px-3 py-2.5 text-xs text-zinc-300 hover:bg-[#1b1b1f] rounded-xl transition-all opacity-60">
+                                        <div className="w-4 h-4 rounded-sm border border-zinc-700 flex items-center justify-center shrink-0">
+                                            <div className="w-1.5 h-1.5 bg-zinc-700 rounded-sm" />
+                                        </div> Add connectors
+                                    </button>
+                                    <div className="h-px bg-[#1b1b1f] my-1.5" />
+                                    <button onClick={() => setWebSearchEnabled(!webSearchEnabled)} className="w-full flex items-center justify-between px-3 py-2.5 text-xs text-zinc-300 hover:bg-[#1b1b1f] rounded-xl transition-all group">
+                                        <div className="flex items-center gap-3"><Globe size={16} className={webSearchEnabled ? 'text-blue-400' : 'text-zinc-500'} /> Web search</div>
+                                        {webSearchEnabled && <Check size={14} className="text-blue-400" />}
+                                    </button>
+                                    <button className="w-full flex items-center justify-between px-3 py-2.5 text-xs text-zinc-300 hover:bg-[#1b1b1f] rounded-xl transition-all opacity-60">
+                                        <div className="flex items-center gap-3"><Wand size={16} className="text-zinc-500" /> Use style</div>
+                                        <ChevronRight size={14} className="text-zinc-650" />
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    )}
+
                     <form onSubmit={handleSubmit} className="input-island relative flex items-center p-2 gap-2">
-                        <button type="button" className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors">
-                            <Plus size={20} />
+                        <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" multiple />
+                        <button type="button" onClick={() => setIsAddMenuOpen(!isAddMenuOpen)} className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors">
+                            <Plus size={20} className={isAddMenuOpen ? 'rotate-45' : ''} />
                         </button>
-                        <input 
-                            placeholder="Message Maurya AI..." value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            className="flex-1 bg-transparent border-none py-3 text-sm outline-none text-white placeholder-zinc-600"
-                        />
-                        <button type="submit" disabled={!input.trim() || isThinking} className={`p-2 rounded-xl transition-all ${!input.trim() || isThinking ? 'text-zinc-700' : 'text-white bg-zinc-800 hover:bg-zinc-700'}`}>
-                            <Send size={18} />
-                        </button>
+                        
+                        <div className="flex-1 flex flex-col min-w-0">
+                            {attachedFiles.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 px-3 py-1 mb-1">
+                                    {attachedFiles.map((name, i) => (
+                                        <div key={i} className="flex items-center gap-1.5 px-2 py-1 bg-zinc-800 border border-zinc-700 rounded-lg text-[10px] text-zinc-300">
+                                            <Paperclip size={10} /> {name}
+                                            <X size={10} className="ml-1 cursor-pointer hover:text-red-400" onClick={() => setAttachedFiles(f => f.filter((_, idx) => idx !== i))} />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            <input 
+                                placeholder="Message Maurya AI..." value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                className="bg-transparent border-none py-3 px-3 text-sm outline-none text-white placeholder-zinc-600"
+                            />
+                        </div>
+
+                        <div className="flex items-center gap-1 pr-1">
+                            <button 
+                                type="button" 
+                                onClick={toggleVoice}
+                                className={`p-2 rounded-xl transition-all ${isListening ? 'text-red-400 bg-red-400/10 animate-pulse' : 'text-zinc-500 hover:text-zinc-300'}`}
+                            >
+                                <Mic size={18} />
+                            </button>
+                            <button type="submit" disabled={(!input.trim() && attachedFiles.length === 0) || isThinking} className={`p-2 rounded-xl transition-all ${(!input.trim() && attachedFiles.length === 0) || isThinking ? 'text-zinc-700' : 'text-white bg-zinc-800 hover:bg-zinc-700'}`}>
+                                <Send size={18} />
+                            </button>
+                        </div>
                     </form>
                     <div className="text-[10px] text-zinc-600 text-center mt-3 tracking-wide">
                         Maurya AI can make mistakes. Please verify important information.
