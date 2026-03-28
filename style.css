@@ -133,3 +133,33 @@ pre code {
     margin-bottom: 2rem;
     max-width: 100%;
 }
+
+/* Auth & Profile Styles */
+.auth-overlay {
+    background: rgba(10, 10, 11, 0.95);
+    backdrop-filter: blur(20px);
+}
+
+.profile-avatar {
+    background: linear-gradient(135deg, #27272a 0%, #09090b 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.animate-float {
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+/* Netlify Identity Widget Customization (Quiet) */
+#netlify-identity-widget {
+    z-index: 1000;
+}
+#netlify-identity-widget .button {
+    background: #1b1b1f !important;
+    border-radius: 12px !important;
+}
