@@ -1,6 +1,6 @@
 import json, urllib.request, urllib.error, ssl
 
-api_key = "AIzaSyB1zVEjuu9Ksweu6w58LyeCj8JtEDs1_jU"
+api_key = "AIzaSyAcb1v-yEIpcdbqUbVvv3YszNSsBrbXrNQ"
 url = "http://localhost:8000/api/proxy"
 
 payload = {
