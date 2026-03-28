@@ -13,8 +13,8 @@ exports.handler = async (event) => {
         };
     }
 
-    // Default to gemini-2.0-flash for 2026 compatibility
-    const model = event.body && JSON.parse(event.body).model || "gemini-2.0-flash";
+    // Default to gemini-2.5-flash for confirmed 2026 compatibility
+    const model = event.body && JSON.parse(event.body).model || "gemini-2.5-flash";
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
     
     try {
