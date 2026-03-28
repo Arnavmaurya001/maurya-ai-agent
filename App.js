@@ -71,6 +71,9 @@ const Download = (props) => (
 const Maximize = (props) => (
     <Icon {...props}><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></Icon>
 );
+const LogOut = (props) => (
+    <Icon {...props}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></Icon>
+);
 
 /**
  * 
@@ -468,7 +471,7 @@ const Sidebar = ({ history, currentSessionId, onNewChat, onLoadSession, onDelete
                 </div>
 
                 <div className="p-4 border-t border-[#1b1b1f] bg-[#0d0d0e]">
-                    <div className="flex items-center justify-between hover:bg-[#1b1b1f] p-2 rounded-xl transition-all cursor-pointer group">
+                    <div className="flex items-center justify-between p-2 rounded-xl transition-all group">
                         <div className="flex items-center gap-3">
                             <div className="w-9 h-9 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-xs font-bold text-zinc-200">
                                 {userInitials}
@@ -478,9 +481,6 @@ const Sidebar = ({ history, currentSessionId, onNewChat, onLoadSession, onDelete
                                 <span className="text-[10px] text-zinc-550 truncate">Free Plan</span>
                             </div>
                         </div>
-                        <button onClick={onLogout} className="p-2 text-zinc-500 hover:text-white opacity-0 group-hover:opacity-100 transition-all">
-                            <X size={16} />
-                        </button>
                     </div>
                 </div>
             </aside>
@@ -661,6 +661,7 @@ const Chat = ({ messages, isThinking, onSendMessage }) => {
 };
 
 const Header = ({ onToggleSidebar, user, onLogout }) => {
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
     const userInitials = user?.user_metadata?.full_name?.split(' ').map(n => n[0]).join('') || user?.email?.[0].toUpperCase() || '?';
 
     return (
@@ -685,10 +686,34 @@ const Header = ({ onToggleSidebar, user, onLogout }) => {
                     </div>
                 </div>
                 {user && (
-                    <div className="flex items-center gap-3 pl-4 border-l border-[#242427]">
-                        <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[10px] font-bold text-zinc-300">
-                            {userInitials}
-                        </div>
+                    <div className="relative">
+                        <button 
+                            onClick={() => setIsProfileOpen(!isProfileOpen)}
+                            className="flex items-center gap-3 pl-4 border-l border-[#242427] hover:opacity-80 transition-all outline-none"
+                        >
+                            <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[10px] font-bold text-zinc-300">
+                                {userInitials}
+                            </div>
+                        </button>
+                        
+                        {isProfileOpen && (
+                            <>
+                                <div onClick={() => setIsProfileOpen(false)} className="fixed inset-0 z-40" />
+                                <div className="absolute right-0 mt-3 w-56 bg-[#0d0d0e] border border-[#1b1b1f] rounded-2xl shadow-2xl p-2 z-50 glass slide-up">
+                                    <div className="px-3 py-3 border-b border-[#1b1b1f] mb-1">
+                                        <div className="text-xs font-bold text-zinc-200 truncate">{user?.user_metadata?.full_name || 'Active User'}</div>
+                                        <div className="text-[10px] text-zinc-500 truncate mt-0.5">{user?.email}</div>
+                                    </div>
+                                    <button 
+                                        onClick={() => { onLogout(); setIsProfileOpen(false); }}
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-xs text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
+                                    >
+                                        <LogOut size={14} />
+                                        Log out
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
             </div>
@@ -740,7 +765,13 @@ const App = () => {
     // Netlify Identity Logic
     useEffect(() => {
         if (window.netlifyIdentity) {
-            window.netlifyIdentity.on('init', user => setUser(user));
+            // Immediate check for existing session
+            const currentUser = window.netlifyIdentity.currentUser();
+            if (currentUser) setUser(currentUser);
+
+            window.netlifyIdentity.on('init', user => {
+                if (user) setUser(user);
+            });
             window.netlifyIdentity.on('login', user => {
                 setUser(user);
                 window.netlifyIdentity.close();
