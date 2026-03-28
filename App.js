@@ -672,8 +672,7 @@ const Header = ({ onToggleSidebar, user, onLogout }) => {
                 >
                     <Menu size={20} />
                 </button>
-                <div className="flex items-center gap-2.5">
-                    <img src="./logo.png" alt="Maurya AI" className="w-4 h-4 rounded shadow-sm opacity-80" />
+                <div className="flex items-center gap-2">
                     <span className="text-[10px] text-zinc-550 uppercase font-bold tracking-[0.2em]">Maurya AI Pro</span>
                 </div>
             </div>
