@@ -454,6 +454,12 @@ const useAgent = () => {
     };
 };
 
+const MobileHeader = () => (
+    <div className="mobile-header">
+        <img src="./logo.png" alt="Maurya AI" className="h-7 w-auto" />
+    </div>
+);
+
 /**
  * 
  * CORE COMPONENTS
@@ -466,7 +472,7 @@ const Sidebar = ({ onNewChat, user, isDarkMode, onToggleTheme, onLogout }) => {
 
     return (
         <aside className="sidebar-icon-strip">
-            <div className="mb-8">
+            <div className="mb-8 desktop-only">
                 <img src="./logo.png" alt="M" className="w-8 h-8 rounded-lg" />
             </div>
             
@@ -973,6 +979,7 @@ const App = () => {
 
     return (
         <div className="flex h-screen w-full overflow-hidden bg-[#0a0a0b] font-sans text-zinc-100 relative">
+            <MobileHeader />
             <Sidebar 
                 onNewChat={startNewChat} 
                 user={user}
