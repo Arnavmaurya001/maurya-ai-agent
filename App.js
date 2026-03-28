@@ -106,7 +106,7 @@ const callGemini = async (apiKey, contents, systemPrompt) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-api-key': apiKey
+                ...(apiKey ? { 'x-api-key': apiKey } : {})
             },
             body: JSON.stringify({
                 system_instruction: { parts: [{ text: systemPrompt }] },
@@ -151,10 +151,10 @@ const useFS = () => {
 };
 
 const useAgent = () => {
-    const apiKey = 'AIzaSy' + 'Acb1v-yEIpcdbqUbVvv3YszNSsBrbXrNQ';
-    const githubToken = 'ghp_' + '6LnFTTW4Fvq75eJXalbHilVMHS19Iz3MOoDB';
-    const githubOwner = 'Arnav' + 'maurya001';
-    const githubRepo = 'maurya-' + 'ai-agent';
+    const apiKey = ''; // Predefined on Netlify Environment Variables
+    const githubToken = ''; // Predefined on Netlify Environment Variables
+    const githubOwner = 'Arnavmaurya001';
+    const githubRepo = 'maurya-ai-agent';
     
     const [messages, setMessages] = useState([]);
     const [isThinking, setIsThinking] = useState(false);
