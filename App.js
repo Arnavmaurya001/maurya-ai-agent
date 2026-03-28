@@ -32,6 +32,15 @@ const History = (props) => (
 const Trash2 = (props) => (
     <Icon {...props}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></Icon>
 );
+const Menu = (props) => (
+    <Icon {...props}><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></Icon>
+);
+const X = (props) => (
+    <Icon {...props}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></Icon>
+);
+const Search = (props) => (
+    <Icon {...props}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></Icon>
+);
 const Key = (props) => (
     <Icon {...props}><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3-3.5 3.5z"/></Icon>
 );
@@ -374,45 +383,59 @@ const useAgent = () => {
  * 
  */
 
-const Sidebar = ({ history, currentSessionId, onNewChat, onLoadSession, onDeleteSession, onToggleAPI }) => {
+const Sidebar = ({ history, currentSessionId, onNewChat, onLoadSession, onDeleteSession, isOpen, onClose }) => {
     return (
-        <aside className="fixed inset-y-0 left-0 z-40 w-72 bg-zinc-900 border-r border-zinc-800 flex flex-col md:relative">
-            <div className="p-4 border-b border-zinc-800">
-                <button 
-                    onClick={onNewChat}
-                    className="w-full h-11 flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-sm font-medium rounded-xl border border-zinc-700 transition-all active:scale-95 text-white"
-                >
-                    <Plus size={18} /> New Chat
-                </button>
-            </div>
+        <>
+            {/* Mobile Overlay */}
+            {isOpen && (
+                <div onClick={onClose} className="fixed inset-0 z-50 mobile-overlay md:hidden" />
+            )}
             
-            <div className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
-                {history.map(session => (
-                    <div 
-                        key={session.id}
-                        onClick={() => onLoadSession(session)}
-                        className={`group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all ${currentSessionId === session.id ? 'bg-zinc-800 text-white' : 'hover:bg-zinc-800/50 text-zinc-400 hover:text-zinc-200'}`}
-                    >
-                        <div className="flex items-center gap-3 overflow-hidden">
-                            <History size={16} className="shrink-0" />
-                            <span className="text-sm truncate font-medium">{session.title}</span>
-                        </div>
-                        <button 
-                            onClick={(e) => { e.stopPropagation(); onDeleteSession(session.id); }}
-                            className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-400"
-                        >
-                            <Trash2 size={14} />
-                        </button>
-                    </div>
-                ))}
-            </div>
-
-            <div className="p-4 border-t border-zinc-800">
-                <div className="flex items-center gap-3 px-3 py-2 text-zinc-500 text-[10px] uppercase tracking-widest font-bold">
-                    System Connected
+            <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-zinc-950 border-r border-zinc-900 flex flex-col sidebar-transition md:translate-x-0 md:static md:z-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <div className="p-4 border-b border-zinc-900 flex items-center justify-between">
+                    <span className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold">History</span>
+                    <button onClick={onClose} className="md:hidden p-1 text-zinc-500 hover:text-white transition-colors">
+                        <X size={18} />
+                    </button>
                 </div>
-            </div>
-        </aside>
+                
+                <div className="p-4 border-b border-zinc-900">
+                    <button 
+                        onClick={() => { onNewChat(); if(window.innerWidth < 768) onClose(); }}
+                        className="w-full h-11 flex items-center justify-center gap-2 bg-zinc-900 hover:bg-zinc-800 text-sm font-medium rounded-xl border border-zinc-800 transition-all active:scale-95 text-white"
+                    >
+                        <Plus size={18} /> New Chat
+                    </button>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
+                    {history.map(session => (
+                        <div 
+                            key={session.id}
+                            onClick={() => { onLoadSession(session); if(window.innerWidth < 768) onClose(); }}
+                            className={`group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all ${currentSessionId === session.id ? 'bg-zinc-900 text-white' : 'hover:bg-zinc-900/50 text-zinc-400 hover:text-zinc-200'}`}
+                        >
+                            <div className="flex items-center gap-3 overflow-hidden">
+                                <History size={16} className="shrink-0" />
+                                <span className="text-sm truncate font-medium">{session.title}</span>
+                            </div>
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); onDeleteSession(session.id); }}
+                                className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-400"
+                            >
+                                <Trash2 size={14} />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="p-4 border-t border-zinc-900">
+                    <div className="flex items-center gap-3 px-3 py-2 text-zinc-500 text-[10px] uppercase tracking-widest font-bold">
+                        Cloud System Active
+                    </div>
+                </div>
+            </aside>
+        </>
     );
 };
 
@@ -529,19 +552,27 @@ const Chat = ({ messages, isThinking, apiKey, onSendMessage }) => {
     );
 };
 
-const Header = () => {
+const Header = ({ onToggleSidebar }) => {
     return (
-        <header className="py-4 border-b border-zinc-900 flex flex-col md:flex-row items-center justify-between px-6 bg-zinc-950/80 backdrop-blur-md gap-4">
-            <h1 className="font-semibold text-zinc-200 shrink-0">Maurya AI Cloud Agent</h1>
+        <header className="py-3 border-b border-zinc-900 flex flex-col md:flex-row items-center justify-between px-4 md:px-6 glass sticky top-0 z-30 gap-3">
+            <div className="flex items-center gap-3 w-full md:w-auto">
+                <button 
+                    onClick={onToggleSidebar}
+                    className="md:hidden p-2 -ml-2 text-zinc-400 hover:text-white transition-colors"
+                >
+                    <Menu size={20} />
+                </button>
+                <h1 className="font-semibold text-zinc-200 shrink-0 text-sm md:text-base">Maurya AI Cloud Agent</h1>
+            </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 w-full md:w-auto justify-end">
                 <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]`} />
-                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Gemini Cloud</span>
+                    <div className={`w-1.5 h-1.5 rounded-full bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]`} />
+                    <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold">Gemini 2.5</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]`} />
-                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">GitHub Sync</span>
+                    <div className={`w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]`} />
+                    <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold">Sync Active</span>
                 </div>
             </div>
         </header>
@@ -553,12 +584,22 @@ const App = () => {
         messages, isThinking, history, currentSessionId, apiKey, sendMessage, 
         startNewChat, loadSession, deleteSession
     } = useAgent();
+    
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-zinc-950 font-sans text-zinc-100">
-            <Sidebar history={history} currentSessionId={currentSessionId} onNewChat={startNewChat} onLoadSession={loadSession} onDeleteSession={deleteSession} />
+        <div className="flex h-screen w-full overflow-hidden bg-zinc-950 font-sans text-zinc-100 relative">
+            <Sidebar 
+                history={history} 
+                currentSessionId={currentSessionId} 
+                onNewChat={startNewChat} 
+                onLoadSession={loadSession} 
+                onDeleteSession={deleteSession}
+                isOpen={sidebarOpen}
+                onClose={() => setSidebarOpen(false)}
+            />
             <main className="flex-1 flex flex-col relative overflow-hidden h-full">
-                <Header />
+                <Header onToggleSidebar={() => setSidebarOpen(true)} />
                 <Chat messages={messages} isThinking={isThinking} apiKey={apiKey} onSendMessage={sendMessage} />
             </main>
         </div>
