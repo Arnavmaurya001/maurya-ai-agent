@@ -568,9 +568,10 @@ const Header = ({ onToggleSidebar }) => {
             <div className="flex items-center gap-3 w-full md:w-auto">
                 <button 
                     onClick={onToggleSidebar}
-                    className="md:hidden p-2 -ml-2 text-zinc-400 hover:text-white transition-colors"
+                    className="md:hidden p-2 text-zinc-100 bg-zinc-900/50 border border-zinc-800 rounded-lg hover:text-white hover:bg-zinc-800 transition-all active:scale-95"
+                    aria-label="Toggle Menu"
                 >
-                    <Menu size={20} />
+                    <Menu size={22} />
                 </button>
                 <h1 className="font-semibold text-zinc-200 shrink-0 text-sm md:text-base">Maurya AI Cloud Agent</h1>
             </div>
