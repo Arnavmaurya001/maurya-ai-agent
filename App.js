@@ -459,11 +459,11 @@ const Sidebar = ({ history, currentSessionId, onNewChat, onLoadSession, onDelete
                 <div onClick={onClose} className="fixed inset-0 z-50 glass md:hidden opacity-60" />
             )}
             
-            <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#0d0d0e] border-r border-[#1b1b1f] flex flex-col sidebar-transition md:translate-x-0 md:static md:z-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                <div className="p-4 border-b border-[#1b1b1f] flex items-center justify-between">
+            <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#fcfcfc] border-r border-[#e9ecef] flex flex-col sidebar-transition md:translate-x-0 md:static md:z-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <div className="p-4 border-b border-[#e9ecef] flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <img src="./logo.png" alt="Maurya AI Logo" className="w-5 h-5 rounded shadow-sm opacity-90" />
-                        <span className="text-zinc-500 text-[10px] uppercase tracking-widest font-bold">Workspace</span>
+                        <img src="./logo.png" alt="Maurya AI Logo" className="w-8 h-8 rounded-lg shadow-sm" />
+                        <span className="text-[#ff6000] text-[11px] uppercase tracking-widest font-black">Workspace</span>
                     </div>
                 </div>
                 
@@ -814,16 +814,17 @@ const Header = ({ onToggleSidebar, user, onLogout }) => {
     const userInitials = user?.user_metadata?.full_name?.split(' ').map(n => n[0]).join('') || user?.email?.[0].toUpperCase() || '?';
 
     return (
-        <header className="py-2.5 border-b border-[#1b1b1f] flex items-center justify-between px-4 md:px-6 glass sticky top-0 z-30">
+        <header className="py-2.5 border-b border-[#e9ecef] flex items-center justify-between px-4 md:px-6 glass sticky top-0 z-30">
             <div className="flex items-center gap-4">
                 <button 
                     onClick={onToggleSidebar}
-                    className="p-2 text-zinc-400 hover:text-white transition-all bg-[#1b1b1f]/40 md:hidden rounded-lg"
+                    className="p-2 text-zinc-400 hover:text-zinc-900 transition-all bg-zinc-50 md:hidden rounded-lg"
                 >
                     <Menu size={20} />
                 </button>
-                <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-zinc-550 uppercase font-bold tracking-[0.2em]">Maurya AI Pro</span>
+                <div className="flex items-center gap-3">
+                    <img src="./logo.png" alt="Maurya AI" className="w-5 h-5 rounded shadow-sm" />
+                    <span className="text-[11px] text-[#ff6000] uppercase font-black tracking-[0.2em] pt-0.5">Maurya AI Pro</span>
                 </div>
             </div>
             
@@ -951,17 +952,17 @@ const App = () => {
 
     if (!user) {
         return (
-            <div className="h-screen w-full flex flex-col items-center justify-center bg-[#0a0a0b] text-center p-6">
-                <div className="w-20 h-20 mb-8 animate-float">
-                    <img src="./logo.png" alt="Maurya AI Logo" className="w-full h-full rounded-2xl shadow-2xl border border-zinc-800" />
+            <div className="h-screen w-full flex flex-col items-center justify-center bg-white text-center p-6">
+                <div className="w-40 h-40 mb-12 animate-float">
+                    <img src="./logo.png" alt="Maurya AI Logo" className="w-full h-full rounded-[2.5rem] shadow-[0_20px_60px_rgba(255,96,0,0.15)] border border-zinc-50" />
                 </div>
-                <h1 className="text-3xl font-semibold text-zinc-200 mb-4 tracking-tight">Welcome to Maurya AI Pro</h1>
-                <p className="text-zinc-500 max-w-sm mb-10 leading-relaxed">A professional, private workspace for secure AI collaboration and coding.</p>
+                <h1 className="text-5xl font-black text-[#1a1a1a] mb-6 tracking-tight">Maurya AI <span className="text-[#ff6000]">Pro</span></h1>
+                <p className="text-zinc-500 max-w-sm mb-14 leading-relaxed text-xl">Your high-performance, private workspace for professional AI collaboration.</p>
                 <button 
                     onClick={handleLogin}
-                    className="px-8 py-3 bg-white text-zinc-950 rounded-xl font-medium hover:bg-zinc-200 transition-all active:scale-95 shadow-xl"
+                    className="px-16 py-5 bg-[#ff6000] text-white rounded-[1.5rem] font-black hover:bg-[#e65600] transition-all active:scale-95 shadow-[0_15px_40px_rgba(255,96,0,0.4)] text-xl uppercase tracking-widest"
                 >
-                    Sign In to Continue
+                    Sign In to Maurya AI
                 </button>
             </div>
         );
