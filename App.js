@@ -60,38 +60,25 @@ const ChevronDown = (props) => (
  * 
  */
 
-const GEMINI_TOOLS = [
-    {
-        function_declarations: [
-            {
-                name: "read_file",
-                description: "Read the contents of a file from the virtual filesystem.",
-                parameters: {
-                    type: "OBJECT",
-                    properties: {
-                        path: { type: "STRING", description: "The path to the file to read" }
-                    },
-                    required: ["path"]
-                }
-            },
-            {
-                name: "write_file",
-                description: "Write content to a file in the virtual filesystem.",
-                parameters: {
-                    type: "OBJECT",
-                    properties: {
-                        path: { type: "STRING", description: "The path where the file should be saved" },
-                        content: { type: "STRING", description: "The content to write to the file" }
-                    },
-                    required: ["path", "content"]
-                }
-            }
-        ]
-    },
-    {
-        google_search: {}
-    }
-];
+const GEMINI_TOOLS = {
+    function_declarations: [
+        {
+            name: "read_file",
+            description: "Read the contents of a file from the virtual filesystem.",
+            parameters: { type: "OBJECT", properties: { path: { type: "STRING" } }, required: ["path"] }
+        },
+        {
+            name: "write_file",
+            description: "Write content to a file in the virtual filesystem.",
+            parameters: { type: "OBJECT", properties: { path: { type: "STRING" }, content: { type: "STRING" } }, required: ["path", "content"] }
+        },
+        {
+            name: "web_search",
+            description: "Perform a real-time web search for any query.",
+            parameters: { type: "OBJECT", properties: { query: { type: "STRING" } }, required: ["query"] }
+        }
+    ]
+};
 
 const callGemini = async (apiKey, contents, systemPrompt) => {
     try {
@@ -106,7 +93,7 @@ const callGemini = async (apiKey, contents, systemPrompt) => {
                 system_instruction: { parts: [{ text: systemPrompt }] },
                 model: "gemini-2.5-flash",
                 contents: contents,
-                tools: GEMINI_TOOLS
+                tools: [GEMINI_TOOLS]
             })
         });
 
@@ -236,18 +223,26 @@ const useAgent = () => {
                     return `Successfully committed '${args.path}' to GitHub repository.`;
 
                 case 'web_search':
-                    // Still use the cloud proxy for search
-                    const searchRes = await fetch('/api/search', {
+                    console.log(`> Smart Relay Search: ${args.query}`);
+                    // Perform a SECOND nested Gemini call specifically for search
+                    const searchRes = await fetch('/api/proxy', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ query: args.query })
+                        body: JSON.stringify({
+                            system_instruction: { parts: [{ text: "You are a Search Specialist. Use Google Search to find accurate, up-to-date results for the provided query and provide a detailed summary. Be objective." }] },
+                            model: "gemini-2.5-flash",
+                            contents: [{ role: 'user', parts: [{ text: `Search for: ${args.query}` }] }],
+                            tools: [{ google_search: {} }] // ONLY use search tool here to avoid conflict
+                        })
                     });
-                    if (!searchRes.ok) {
-                        const err = await searchRes.json();
-                        return `Error: ${err.error?.message || 'Failed to perform search'}`;
-                    }
+                    
+                    if (!searchRes.ok) return "Error: Failed to fetch real-time search results.";
                     const searchData = await searchRes.json();
-                    return Array.isArray(searchData.results) ? searchData.results.join('\n') : "No results found.";
+                    
+                    if (searchData.error) return `Error: ${searchData.error.message}`;
+                    
+                    const searchContent = searchData.candidates?.[0]?.content?.parts?.map(p => p.text).join(' ');
+                    return searchContent || "No detailed search results found.";
 
                 default:
                     return "Unknown tool";
