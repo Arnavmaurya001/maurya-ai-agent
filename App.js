@@ -455,69 +455,29 @@ const useAgent = () => {
  * 
  */
 
-const Sidebar = ({ history, currentSessionId, onNewChat, onLoadSession, onDeleteSession, isOpen, onClose, user, onLogout }) => {
+const Sidebar = ({ onNewChat, user }) => {
     const userInitials = user?.user_metadata?.full_name?.split(' ').map(n => n[0]).join('') || user?.email?.[0].toUpperCase() || '?';
 
     return (
-        <>
-            {/* Mobile Overlay */}
-            {isOpen && (
-                <div onClick={onClose} className="fixed inset-0 z-50 glass md:hidden opacity-60" />
-            )}
+        <aside className="sidebar-icon-strip">
+            <div className="mb-8">
+                <img src="./logo.png" alt="M" className="w-8 h-8 rounded-lg" />
+            </div>
             
-            <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-[var(--bg-secondary)] border-r border-[var(--border-subtle)] flex flex-col sidebar-transition md:translate-x-0 md:static md:z-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                <div className="p-6 border-b border-[var(--border-subtle)] flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <img src="./logo.png" alt="Maurya AI Logo" className="w-14 h-14 rounded-2xl shadow-lg border border-[var(--border-subtle)]" />
-                        <span className="text-[var(--accent)] text-xs uppercase tracking-[0.3em] font-black">Maurya AI</span>
-                    </div>
-                </div>
-                
-                <div className="p-4">
-                    <button 
-                        onClick={() => { onNewChat(); if(window.innerWidth < 768) onClose(); }}
-                        className="w-full h-11 flex items-center justify-center gap-2 bg-[#1b1b1f] hover:bg-[#27272a] text-sm font-medium rounded-xl border border-[#242427] transition-all active:scale-95 text-zinc-100"
-                    >
-                        <Plus size={18} /> New Chat
-                    </button>
-                </div>
-                
-                <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1">
-                    {history.map(session => (
-                        <div 
-                            key={session.id}
-                            onClick={() => { onLoadSession(session); if(window.innerWidth < 768) onClose(); }}
-                            className={`group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all ${currentSessionId === session.id ? 'bg-[#1b1b1f] text-white' : 'hover:bg-[#1b1b1f]/50 text-zinc-500 hover:text-zinc-300'}`}
-                        >
-                            <div className="flex items-center gap-3 overflow-hidden">
-                                <History size={16} className="shrink-0" />
-                                <span className="text-sm truncate font-medium">{session.title}</span>
-                            </div>
-                            <button 
-                                onClick={(e) => { e.stopPropagation(); onDeleteSession(session.id); }}
-                                className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-400"
-                            >
-                                <Trash2 size={14} />
-                            </button>
-                        </div>
-                    ))}
-                </div>
+            <button className="sidebar-icon-btn" title="Create New Chat" onClick={onNewChat}><Plus size={22} /></button>
+            <button className="sidebar-icon-btn active" title="Search"><Search size={22} /></button>
+            <button className="sidebar-icon-btn" title="History"><History size={22} /></button>
+            <button className="sidebar-icon-btn" title="Project Tools"><Box size={22} /></button>
+            <button className="sidebar-icon-btn" title="Skills"><BookOpen size={22} /></button>
+            <button className="sidebar-icon-btn" title="Code"><Code size={22} /></button>
 
-                <div className="p-4 border-t border-[#1b1b1f] bg-[#0d0d0e]">
-                    <div className="flex items-center justify-between p-2 rounded-xl transition-all group">
-                        <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-xs font-bold text-zinc-200">
-                                {userInitials}
-                            </div>
-                            <div className="flex flex-col min-w-0">
-                                <span className="text-xs font-semibold text-zinc-200 truncate">{user?.user_metadata?.full_name || user?.email?.split('@')[0]}</span>
-                                <span className="text-[10px] text-zinc-550 truncate">Free Plan</span>
-                            </div>
-                        </div>
-                    </div>
+            <div className="mt-auto flex flex-col items-center gap-4 pb-4">
+                <button className="sidebar-icon-btn" title="Download App"><Download size={22} /></button>
+                <div className="w-10 h-10 rounded-full bg-[var(--bg-tertiary)] border border-[var(--border-subtle)] flex items-center justify-center text-xs font-bold text-[var(--text-primary)] cursor-pointer hover:border-[var(--accent)] transition-all">
+                    {userInitials}
                 </div>
-            </aside>
-        </>
+            </div>
+        </aside>
     );
 };
 
@@ -705,103 +665,79 @@ const Chat = ({ messages, isThinking, onSendMessage }) => {
     return (
         <div className="flex-1 flex flex-col h-full overflow-hidden relative bg-[var(--bg-primary)]">
             <div className="flex-1 overflow-y-auto pt-8 pb-32 scrollbar-none">
-                <div className="max-w-4xl mx-auto">
-                    {messages.length === 0 && (
-                        <div className="flex flex-col items-center justify-center h-[60vh] text-center px-4">
-                            <div className="w-16 h-16 bg-[var(--bg-secondary)] border border-[var(--border-subtle)] rounded-2xl flex items-center justify-center mb-6 shadow-xl">
-                                <Bot size={28} className="text-zinc-400" />
+                <div className="max-w-4xl mx-auto px-4">
+                    {messages.length === 0 ? (
+                        <div className="centered-dashboard fade-in">
+                            <div className="mb-10 animate-float opacity-80">
+                                <div className="text-[var(--accent)] text-5xl mb-4">✴️</div>
                             </div>
-                            <h2 className="text-3xl font-extrabold text-[var(--text-primary)] mb-2">How can I help you today?</h2>
-                            <p className="text-[var(--text-secondary)] max-w-sm text-lg">From coding apps to searching the web, I am ready to collaborate with you.</p>
+                            <h2 className="greeting-text">Maurya Premium Thinking</h2>
+                            
+                            <div className="input-island-centered mb-8">
+                                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                                    <textarea 
+                                        placeholder="How can I help you today?" 
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        rows={3}
+                                        className="w-full bg-transparent border-none p-0 text-xl outline-none text-[var(--text-primary)] placeholder-zinc-400 resize-none"
+                                        onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e); }}}
+                                    />
+                                    <div className="flex items-center justify-between pt-4 border-t border-[var(--border-subtle)]">
+                                        <div className="flex items-center gap-2">
+                                            <button type="button" onClick={() => setIsAddMenuOpen(!isAddMenuOpen)} className="p-2 text-zinc-400 hover:text-[var(--accent)]"><Plus size={22} /></button>
+                                            <div className="bg-[var(--bg-tertiary)] px-3 py-1.5 rounded-lg text-xs font-bold text-zinc-500 uppercase tracking-widest border border-[var(--border-subtle)]">
+                                                Maurya 2.5 Pro
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <button type="button" onClick={toggleVoice} className={`p-2 rounded-full transition-all ${isListening ? 'text-red-400 bg-red-400/10' : 'text-zinc-400 hover:text-[var(--accent)]'}`}><Mic size={22} /></button>
+                                            <button type="submit" disabled={!input.trim() || isThinking} className="p-2.5 bg-[var(--accent)] text-white rounded-full transition-all hover:scale-105 active:scale-95 disabled:opacity-30 shadow-lg"><Send size={20} /></button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div className="flex flex-wrap justify-center gap-3 mb-10">
+                                <button className="quick-action-pill" onClick={() => setInput("Write a professional email...")}>✒️ Write</button>
+                                <button className="quick-action-pill" onClick={() => setInput("Explain quantum physics simply...")}>🎓 Learn</button>
+                                <button className="quick-action-pill" onClick={() => setInput("Write a React component for...")}>💻 Code</button>
+                                <button className="quick-action-pill" onClick={() => setInput("What's interesting today?")}>✨ Maurya's Choice</button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-0 py-8">
+                            {messages.map((msg, i) => <Message key={i} msg={msg} />)}
                         </div>
                     )}
-                    <div className="space-y-0">
-                        {messages.map((msg, i) => <Message key={i} msg={msg} />)}
-                    </div>
+                    
                     {isThinking && (
                         <div className="max-w-4xl mx-auto px-14 py-6">
-                            <Loader2 size={20} className="animate-spin text-[var(--accent)]" />
+                            <Loader2 size={24} className="animate-spin text-[var(--accent)]" />
                         </div>
                     )}
                     <div ref={messagesEndRef} />
                 </div>
             </div>
             
-            <div className="absolute bottom-0 left-0 right-0 p-6 pointer-events-none">
-                <div className="max-w-3xl mx-auto pointer-events-auto relative">
-                    {/* Add Menu Popover */}
-                    {isAddMenuOpen && (
-                        <>
-                            <div onClick={() => setIsAddMenuOpen(false)} className="fixed inset-0 z-40" />
-                            <div className="absolute bottom-[calc(100%+12px)] left-0 w-72 bg-[var(--bg-primary)] border border-[var(--border-subtle)] rounded-2xl shadow-2xl p-2 z-50 glass slide-up overflow-hidden">
-                                <div className="space-y-1">
-                                    <button onClick={() => fileInputRef.current?.click()} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-xl transition-all">
-                                        <Paperclip size={18} className="text-[var(--accent)]" /> Add files or photos
-                                    </button>
-                                    <button className="w-full flex items-center justify-between px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-xl transition-all opacity-40">
-                                        <div className="flex items-center gap-3"><Camera size={18} className="text-zinc-500" /> Take a screenshot</div>
-                                    </button>
-                                    <button className="w-full flex items-center justify-between px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-xl transition-all opacity-40">
-                                        <div className="flex items-center gap-3"><Box size={18} className="text-zinc-500" /> Add to project</div>
-                                        <ChevronRight size={14} className="text-zinc-650" />
-                                    </button>
-                                    <div className="h-px bg-[var(--border-subtle)] my-2" />
-                                    <button className="w-full flex items-center justify-between px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-xl transition-all opacity-40">
-                                        <div className="flex items-center gap-3"><BookOpen size={18} className="text-zinc-500" /> Skills</div>
-                                        <ChevronRight size={14} className="text-zinc-650" />
-                                    </button>
-                                    <div className="h-px bg-[var(--border-subtle)] my-2" />
-                                    <button onClick={() => setWebSearchEnabled(!webSearchEnabled)} className="w-full flex items-center justify-between px-4 py-3 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-xl transition-all group">
-                                        <div className="flex items-center gap-3"><Globe size={18} className={webSearchEnabled ? 'text-[var(--accent)]' : 'text-zinc-500'} /> Web search</div>
-                                        {webSearchEnabled && <Check size={16} className="text-[var(--accent)]" />}
-                                    </button>
-                                </div>
-                            </div>
-                        </>
-                    )}
-
-                    <form onSubmit={handleSubmit} className="input-island relative flex items-center p-3 gap-3">
-                        <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" multiple />
-                        <button type="button" onClick={() => setIsAddMenuOpen(!isAddMenuOpen)} className="p-2 text-zinc-500 hover:text-[var(--accent)] transition-colors">
-                            <Plus size={22} className={isAddMenuOpen ? 'rotate-45' : ''} />
-                        </button>
-                        
-                        <div className="flex-1 flex flex-col min-w-0">
-                            {attachedFiles.length > 0 && (
-                                <div className="flex flex-wrap gap-2 px-3 py-1 mb-2">
-                                    {attachedFiles.map((name, i) => (
-                                        <div key={i} className="flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-secondary)] border border-[var(--border-subtle)] rounded-xl text-[11px] text-[var(--text-secondary)]">
-                                            <Paperclip size={12} className="text-[var(--accent)]" /> {name}
-                                            <X size={12} className="ml-2 cursor-pointer hover:text-red-500" onClick={() => setAttachedFiles(f => f.filter((_, idx) => idx !== i))} />
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+            {/* Input pill for active chats (bottom anchored) */}
+            {messages.length > 0 && (
+                <div className="absolute bottom-0 left-0 right-0 p-6 pointer-events-none">
+                    <div className="max-w-3xl mx-auto pointer-events-auto relative">
+                        <form onSubmit={handleSubmit} className="input-island relative flex items-center p-3 gap-3">
                             <input 
-                                placeholder="Message Maurya AI..." value={input}
+                                placeholder="Follow up..." value={input}
                                 onChange={(e) => setInput(e.target.value)}
-                                className="bg-transparent border-none py-2 px-3 text-base outline-none text-[var(--text-primary)] placeholder-zinc-500"
+                                className="bg-transparent border-none py-2 px-3 text-base outline-none text-[var(--text-primary)] placeholder-zinc-500 flex-1"
                             />
-                        </div>
-
-                        <div className="flex items-center gap-2 pr-1">
-                            <button 
-                                type="button" 
-                                onClick={toggleVoice}
-                                className={`p-2.5 rounded-2xl transition-all ${isListening ? 'text-white bg-[var(--accent)] animate-pulse shadow-lg' : 'text-zinc-400 hover:text-[var(--accent)] bg-[var(--bg-secondary)]'}`}
-                            >
-                                <Mic size={20} />
-                            </button>
-                            <button type="submit" disabled={(!input.trim() && attachedFiles.length === 0) || isThinking} className={`p-2.5 rounded-2xl transition-all ${(!input.trim() && attachedFiles.length === 0) || isThinking ? 'text-zinc-300 bg-zinc-100 opacity-50' : 'text-white bg-[var(--accent)] hover:opacity-90 shadow-lg'}`}>
-                                <Send size={20} />
-                            </button>
-                        </div>
-                    </form>
-                    <div className="text-[10px] text-zinc-500 text-center mt-3 tracking-widest uppercase font-bold opacity-60">
-                        Maurya AI can make mistakes. Please verify important information.
+                            <div className="flex items-center gap-2 pr-1">
+                                <button onClick={toggleVoice} type="button" className={`p-2.5 rounded-2xl ${isListening ? 'text-red-400 bg-red-400/10' : 'text-zinc-400 hover:text-[var(--accent)]'}`}><Mic size={20} /></button>
+                                <button type="submit" className="p-2.5 bg-[var(--accent)] text-white rounded-2xl"><Send size={20} /></button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };
