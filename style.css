@@ -163,6 +163,24 @@ pre code {
     z-index: 50;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     height: 100vh;
+    flex-shrink: 0;
+}
+
+.mobile-header {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-subtle);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1rem;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .sidebar-icon-btn {
@@ -275,33 +293,56 @@ pre code {
 @media (max-width: 768px) {
     .sidebar-icon-strip {
         width: 100%;
-        height: 64px;
+        height: 70px;
         flex-direction: row;
-        justify-content: space-around;
-        padding: 0;
+        justify-content: space-between;
+        padding: 0 1rem;
         position: fixed;
         bottom: 0;
         top: auto;
         border-right: none;
         border-top: 1px solid var(--border-subtle);
+        background: var(--bg-primary);
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
     }
     
+    .mobile-header {
+        display: flex;
+    }
+
+    .desktop-only {
+        display: none !important;
+    }
+
     .sidebar-icon-btn {
         margin-bottom: 0;
+        width: 48px;
+        height: 48px;
     }
 
     .greeting-text {
-        font-size: 2.25rem;
+        font-size: clamp(1.75rem, 8vw, 2.5rem);
         margin-bottom: 1.5rem;
+        line-height: 1.2;
     }
     
     .centered-dashboard {
-        min-height: 70vh;
-        padding-bottom: 100px;
+        min-height: calc(100vh - 130px);
+        padding: 1.5rem;
+        justify-content: flex-start;
+        padding-top: 80px; /* Space for MobileHeader */
+        padding-bottom: 100px; /* Space for Bottom Bar */
     }
 
     .input-island-centered {
         padding: 1rem;
         border-radius: 20px;
+    }
+
+    .artifact-pane {
+        position: fixed;
+        inset: 0;
+        width: 100% !important;
+        z-index: 200;
     }
 }
