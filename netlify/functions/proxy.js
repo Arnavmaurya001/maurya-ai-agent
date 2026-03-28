@@ -13,8 +13,9 @@ exports.handler = async (event) => {
         };
     }
 
-    // Try v1 API instead of v1beta for more stable model routing
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // Default to gemini-2.0-flash for 2026 compatibility
+    const model = event.body && JSON.parse(event.body).model || "gemini-2.0-flash";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
     
     try {
         const response = await fetch(url, {
