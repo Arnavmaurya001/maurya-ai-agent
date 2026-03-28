@@ -15,5 +15,5 @@ def list_models(api_key):
 
 if __name__ == "__main__":
     # Using the key provided by the user (I'll extract it from App.js if needed, but I have it from the logs)
-    api_key = "AIzaSyB1zVEjuu9Ksweu6w58LyeCj8JtEDs1_jU"
+    api_key = "AIzaSyAcb1v-yEIpcdbqUbVvv3YszNSsBrbXrNQ"
     list_models(api_key)
