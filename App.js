@@ -60,44 +60,43 @@ const ChevronDown = (props) => (
  * 
  */
 
-const GEMINI_TOOLS = {
-    function_declarations: [
-        {
-            name: "read_file",
-            description: "Read the contents of a file from the virtual filesystem.",
-            parameters: {
-                type: "OBJECT",
-                properties: {
-                    path: { type: "STRING", description: "The path to the file to read" }
-                },
-                required: ["path"]
+const GEMINI_TOOLS = [
+    {
+        function_declarations: [
+            {
+                name: "read_file",
+                description: "Read the contents of a file from the virtual filesystem.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        path: { type: "STRING", description: "The path to the file to read" }
+                    },
+                    required: ["path"]
+                }
+            },
+            {
+                name: "write_file",
+                description: "Write content to a file in the virtual filesystem.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        path: { type: "STRING", description: "The path where the file should be saved" },
+                        content: { type: "STRING", description: "The content to write to the file" }
+                    },
+                    required: ["path", "content"]
+                }
             }
-        },
-        {
-            name: "write_file",
-            description: "Write content to a file in the virtual filesystem.",
-            parameters: {
-                type: "OBJECT",
-                properties: {
-                    path: { type: "STRING", description: "The path where the file should be saved" },
-                    content: { type: "STRING", description: "The content to write to the file" }
-                },
-                required: ["path", "content"]
-            }
-        },
-        {
-            name: "web_search",
-            description: "Perform a web search using the specified query.",
-            parameters: {
-                type: "OBJECT",
-                properties: {
-                    query: { type: "STRING", description: "The search query" }
-                },
-                required: ["query"]
+        ]
+    },
+    {
+        google_search_retrieval: {
+            dynamic_retrieval_config: {
+                mode: "UNSPECIFIED",
+                dynamic_threshold: 0
             }
         }
-    ]
-};
+    }
+];
 
 const callGemini = async (apiKey, contents, systemPrompt) => {
     try {
@@ -112,7 +111,7 @@ const callGemini = async (apiKey, contents, systemPrompt) => {
                 system_instruction: { parts: [{ text: systemPrompt }] },
                 model: "gemini-2.5-flash",
                 contents: contents,
-                tools: [GEMINI_TOOLS]
+                tools: GEMINI_TOOLS
             })
         });
 
@@ -294,7 +293,7 @@ const useAgent = () => {
             let agentStillWorking = true;
             
             while (agentStillWorking) {
-                const response = await callGemini(apiKey, geminiContents, "You are Maurya AI, a precise coding assistant using the virtual filesystem. Reason step by step before acting. Be concise and professional.");
+                const response = await callGemini(apiKey, geminiContents, "You are Maurya AI, a precise coding assistant with built-in Google Search. Use Google Search for any non-coding queries or current information. Reason step by step before acting.");
                 
                 const candidate = response.candidates[0];
                 const modelParts = candidate.content.parts;
@@ -305,12 +304,12 @@ const useAgent = () => {
                     content: modelParts.map((p, idx) => {
                         if (p.text) return { type: 'text', text: p.text };
                         if (p.functionCall) {
-                            // Stable ID for UI mapping
                             const toolId = `${p.functionCall.name}_${Date.now().toString(36)}_${idx}`;
                             return { type: 'tool_use', name: p.functionCall.name, input: p.functionCall.args, id: toolId };
                         }
                         return null;
-                    }).filter(Boolean)
+                    }).filter(Boolean),
+                    groundingMetadata: candidate.groundingMetadata
                 };
                 
                 setMessages(prev => [...prev, assistantMsg]);
@@ -473,6 +472,23 @@ const Message = ({ msg }) => {
                         })
                     ) : (
                         <Markdown content={msg.content} />
+                    )}
+                    
+                    {!isUser && msg.groundingMetadata?.groundingChunks && (
+                        <div className="mt-4 pt-4 border-t border-zinc-900">
+                            <div className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold mb-2 flex items-center gap-2">
+                                <Search size={12} /> Sources & Grounding
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {msg.groundingMetadata.groundingChunks.map((chunk, i) => (
+                                    chunk.web && (
+                                        <a key={i} href={chunk.web.uri} target="_blank" rel="noopener noreferrer" className="text-[11px] bg-zinc-900 border border-zinc-800 px-2 py-1 rounded hover:bg-zinc-800 transition-colors text-sky-400 truncate max-w-[200px]">
+                                            {chunk.web.title || chunk.web.uri}
+                                        </a>
+                                    )
+                                ))}
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>
