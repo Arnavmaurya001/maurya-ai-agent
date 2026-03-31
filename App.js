@@ -217,9 +217,7 @@ const useFS = () => {
 
 const useAgent = () => {
     const apiKey = ''; // Predefined on Netlify Environment Variables
-    const githubToken = ''; // Predefined on Netlify Environment Variables
-    const githubOwner = 'Arnavmaurya001';
-    const githubRepo = 'maurya-ai-agent';
+    // GitHub configuration is now handled server-side via Netlify functions
     
     const [messages, setMessages] = useState([]);
     const [isThinking, setIsThinking] = useState(false);
@@ -256,55 +254,33 @@ const useAgent = () => {
     }, [currentSessionId, history]);
 
     const executeTool = async (name, args) => {
-        const ghHeaders = {
-            'Authorization': `token ${githubToken}`,
-            'Accept': 'application/vnd.github.v3+json'
-        };
-
         try {
             switch (name) {
                 case 'read_file':
-                    console.log(`> Cloud Read: ${args.path}`);
-                    const readRes = await fetch(`https://api.github.com/repos/${githubOwner}/${githubRepo}/contents/${args.path}`, {
-                        headers: ghHeaders
+                    console.log(`> Cloud Proxy Read: ${args.path}`);
+                    const readRes = await fetch('/api/github', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'read', path: args.path })
                     });
-                    if (!readRes.ok) {
-                        const err = await readRes.json();
-                        return `Error: ${err.message || 'Failed to read from GitHub'}`;
-                    }
                     const readData = await readRes.json();
-                    // Handle base64 decoding safely for UTF-8
-                    return decodeURIComponent(escape(atob(readData.content)));
+                    if (!readRes.ok) return `Error: ${readData.error || 'Failed to read file'}`;
+                    return readData.content;
 
                 case 'write_file':
-                    console.log(`> Cloud Write: ${args.path}`);
-                    // 1. Get current file SHA if it exists
-                    const existingFile = await fetch(`https://api.github.com/repos/${githubOwner}/${githubRepo}/contents/${args.path}`, {
-                        headers: ghHeaders
-                    });
-                    
-                    let sha = null;
-                    if (existingFile.ok) {
-                        const existingData = await existingFile.json();
-                        sha = existingData.sha;
-                    }
-
-                    // 2. Commit the change
-                    const writeRes = await fetch(`https://api.github.com/repos/${githubOwner}/${githubRepo}/contents/${args.path}`, {
-                        method: 'PUT',
-                        headers: ghHeaders,
-                        body: JSON.stringify({
-                            message: `Update ${args.path} via Maurya AI Agent`,
-                            content: btoa(unescape(encodeURIComponent(args.content))),
-                            sha: sha
+                    console.log(`> Cloud Proxy Write: ${args.path}`);
+                    const writeRes = await fetch('/api/github', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            action: 'write', 
+                            path: args.path, 
+                            content: args.content 
                         })
                     });
-
-                    if (!writeRes.ok) {
-                        const err = await writeRes.json();
-                        return `Error: ${err.message || 'Failed to write to GitHub'}`;
-                    }
-                    return `Successfully committed '${args.path}' to GitHub repository.`;
+                    const writeData = await writeRes.json();
+                    if (!writeRes.ok) return `Error: ${writeData.error || 'Failed to write file'}`;
+                    return `Successfully committed '${args.path}' to GitHub via secure proxy.`;
 
                 case 'web_search':
                     console.log(`> Smart Relay Search: ${args.query}`);
